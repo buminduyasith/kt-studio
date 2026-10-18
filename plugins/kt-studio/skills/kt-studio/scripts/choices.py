@@ -20,16 +20,18 @@ suggestion, else this feature's last answer, else the answer picked most often i
 `defaults:` in config.yml, else the built-in default.
 
 Usage:
-  python3 choices.py ask <root> <feature> [--keys audience,show,environment] [--given '<json>'] [--suggest '<json>']
+  python3 choices.py ask <root> <feature> [--keys audience,show,environment,sources] [--given '<json>'] [--suggest '<json>']
       Prints JSON: "use" (settled answers and where each came from), "ask" (the questions, at most 4,
       each option with its "value"), and "say" (one line telling the person what was settled).
       --given: what the request says, as values ({"audience": "qa"}). --suggest: the research's best
       guess, used only to order the options ({"depth": "deep-dive"}).
   python3 choices.py record <root> <feature> --answers '<json>' [--learn key,key] [--note '<text>']...
-                            [--run <run-folder>] [--title '<title>']
+                            [--knowledge '<folder, file or link>']... [--run <run-folder>] [--title '<title>']
       Saves the answers in feature.yml (and in the run's run.json `choices` with --run). Only the keys in
       --learn are added to learned.yml: the ones the person answered or the request said, never the
-      ones settled from feature.yml or learned.yml. A --note is kept in feature.yml under `notes`.
+      ones settled from feature.yml or learned.yml. A --note is kept in feature.yml under `notes`. A
+      --knowledge entry is a place the research reads for this feature only (see sources.py), kept in
+      feature.yml under `knowledge`.
 """
 from __future__ import annotations
 
@@ -86,8 +88,18 @@ KEYS: dict[str, dict] = {
             ("deep-dive", "Deep dive", "8 to 12 minutes: every hop, the failure paths, the data and its states"),
         ],
     },
+    "sources": {
+        "header": "Sources",
+        "question": "Besides the code, what should the research read? (To add a spec, a folder or a link "
+                    "for this video, type it under Other.)",
+        "default": "project",
+        "options": [
+            ("project", "Code and the project's sources", ""),  # the description lists config.yml `knowledge`
+            ("code-only", "Code only", "Only the code and its git history: skip the docs, folders and links"),
+        ],
+    },
 }
-ROUND_ONE = ["audience", "show", "environment"]
+ROUND_ONE = ["audience", "show", "environment", "sources"]
 WHY = {"request": "you asked for it", "feature": "this feature's last video", "instructions": "your instructions",
        "only one": "the only one", "no app": "no app in ## Addresses", "learned": f"picked {SETTLE} times in a row"}
 
@@ -149,12 +161,12 @@ def write_yml(path: Path, header: str, data: dict) -> None:
 
 
 FEATURE_HEADER = """# This feature's answers for KT Studio videos: who they are for, what they show, where the screens
-# come from. Every video of this feature reads it and asks only what it does not say.
+# come from, what the research reads. Every video of this feature reads it and asks only what it does not say.
 # Written by KT Studio (choices.py); edit a value freely. Commit it with the rest of .kt-studio/."""
 LEARNED_HEADER = """# What KT Studio learned from the answers people picked for earlier videos, newest last.
 # It recommends the answer picked most often, and stops asking once the same answer was picked
 # 3 times in a row. Delete an answer to make it ask again. Written by KT Studio (choices.py)."""
-FEATURE_ORDER = ["feature", "title", "audience", "show", "environment", "depth", "language"]
+FEATURE_ORDER = ["feature", "title", "audience", "show", "environment", "depth", "sources", "language", "knowledge"]
 
 
 # ---- what the project already says
@@ -268,6 +280,8 @@ def ask(proj: project.Project, feature: str, keys: list[str], given: dict, sugge
         builtin = KEYS[key].get("default", "")
         pick = next((v for v in [suggest.get(key), last, most_picked(history), defaults.get(key), builtin]
                      if v and v in values), values[0] if values else "")
+        if key == "sources":
+            opts = [(v, label, desc or project_sources(proj)) for v, label, desc in opts]
         ordered = sorted(opts, key=lambda o: o[0] != pick)[:4]
         questions.append({
             "key": key,
@@ -285,8 +299,18 @@ def ask(proj: project.Project, feature: str, keys: list[str], given: dict, sugge
     return {"feature": feature, "use": use, "ask": questions[:4], "say": say}
 
 
+def project_sources(proj: project.Project) -> str:
+    """The description of "Code and the project's sources": what config.yml `knowledge` lists."""
+    import sources  # here, not at the top: sources imports this module
+    entries = sources.config_entries(proj)
+    if not entries:
+        return "Nothing is listed in config.yml yet: the READMEs and docs found in the repos"
+    shown = ", ".join(entries[:3]) + (f" and {len(entries) - 3} more" if len(entries) > 3 else "")
+    return f"The code, then {shown} (config.yml knowledge)"
+
+
 def record(proj: project.Project, feature: str, answers: dict, learn: list[str], notes: list[str],
-           run: Path | None, title: str) -> list[str]:
+           run: Path | None, title: str, knowledge: list[str] | None = None) -> list[str]:
     envs = environments(proj)[0]
     folder = proj.feature(feature)
     path = folder / "feature.yml"
@@ -299,6 +323,9 @@ def record(proj: project.Project, feature: str, answers: dict, learn: list[str],
     note_list = data.get("notes") if isinstance(data.get("notes"), list) else []
     note_list += [n for n in notes if n and n not in note_list]
     data["notes"] = note_list
+    places = data.get("knowledge") if isinstance(data.get("knowledge"), list) else []
+    places += [k.strip() for k in (knowledge or []) if k.strip() and k.strip() not in places]
+    data["knowledge"] = places
     runs = data.get("runs") if isinstance(data.get("runs"), list) else []
     if run and run.name not in runs:
         runs.append(run.name)
@@ -308,7 +335,8 @@ def record(proj: project.Project, feature: str, answers: dict, learn: list[str],
     ordered.update({k: v for k, v in data.items() if k not in ordered and k not in ("notes", "runs", "updated")})
     ordered.update({"notes": data["notes"], "runs": data["runs"], "updated": data["updated"]})
     write_yml(path, FEATURE_HEADER, ordered)
-    done = [f"saved {proj.rel(path)}: " + ", ".join(f"{k} {v}" for k, v in clean.items())]
+    done = [f"saved {proj.rel(path)}: " + ", ".join([f"{k} {v}" for k, v in clean.items()]
+                                                     + [f"knowledge {k}" for k in (knowledge or [])])]
 
     taught = {k: clean[k] for k in learn if k in clean}
     if taught:
@@ -322,9 +350,10 @@ def record(proj: project.Project, feature: str, answers: dict, learn: list[str],
     if run:
         run_json = run / "run.json"
         info = json.loads(run_json.read_text()) if run_json.is_file() else {}
-        info["choices"] = {**info.get("choices", {}), **clean, **({"notes": note_list} if note_list else {})}
+        info["choices"] = {**info.get("choices", {}), **clean, **({"notes": note_list} if note_list else {}),
+                           **({"knowledge": places} if places else {})}
         run_json.write_text(json.dumps(info, indent=2) + "\n")
-        done.append(f"run.json choices: {', '.join(sorted(k for k in info['choices'] if k != 'notes'))}")
+        done.append(f"run.json choices: {', '.join(sorted(k for k in info['choices'] if k not in ('notes', 'knowledge')))}")
     project.write_gitignore(proj.out)
     return done
 
@@ -364,7 +393,8 @@ def main() -> None:
         run = option(rest, "--run")
         learn = [k.strip() for k in option(rest, "--learn").split(",") if k.strip()]
         lines = record(proj, feature, as_json(option(rest, "--answers"), "--answers"), learn,
-                       option(rest, "--note", many=True), Path(run) if run else None, option(rest, "--title"))
+                       option(rest, "--note", many=True), Path(run) if run else None, option(rest, "--title"),
+                       option(rest, "--knowledge", many=True))
         print("\n".join(lines))
 
 

@@ -79,8 +79,9 @@ missing.
 ```
 
 It checks your computer, looks at your project and its docs, asks a few questions (for example,
-which services you have, what each one is for and where each one runs), and saves your answers in a
-`.kt-studio/` folder. Then it installs the recorder. This takes 2 to 5 minutes, one time only.
+which services you have, what each one is for and where each one runs, and what the research should
+read besides the code: docs folders, other folders, wiki links, or only the code), and saves your
+answers in a `.kt-studio/` folder. Then it installs the recorder. This takes 2 to 5 minutes, one time only.
 
 **2. Make a video.** Type the command and the name of a feature:
 
@@ -104,7 +105,8 @@ You can add instructions in plain words:
 You can also just ask in your own words, for example "make a KT video of order refunds for QA".
 
 **It asks a few quick questions, with the best answer first.** Who the video is for, what to show
-(screens, code or both) and which environment. After reading the code, it asks how deep to go and which
+(screens, code or both), which environment, and what to read besides the code (your usual sources, code
+only, or a spec or link you add for this feature). After reading the code, it asks how deep to go and which
 flows to show, with answers taken from your code. Anything your request already says is not asked.
 It remembers the answers: each feature keeps them in its own folder, and the answers your team picks
 most often become the recommended ones. The first video in a project asks the most; later ones ask

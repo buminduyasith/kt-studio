@@ -17,9 +17,12 @@ repos:                                # code the tour is allowed to show, read f
     label: Backend
     ref: origin/develop
 
-knowledge:                            # where to look first when researching a feature
-  - docs/index.md
+knowledge:                            # where research reads before the code, in this order ([] = code only)
+  - docs/index.md                     # a file or folder in the project
   - docs/features/
+  # - ~/notes/shop-design/            # a folder outside the project (only on computers that have it)
+  # - https://wiki.acme.example/shop  # a web page (never logged in to: save private pages as files)
+  # - "connector: Help center space"  # a wiki or drive read through a tool connected in Claude Code
 
 voice:
   engine: kokoro                      # offline, free; the text never leaves your machine

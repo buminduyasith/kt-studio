@@ -25,6 +25,7 @@ sys.path.insert(0, str(SCRIPTS))
 import choices  # noqa: E402
 import project  # noqa: E402
 import services  # noqa: E402
+import sources  # noqa: E402
 
 GIT_ENV = {**os.environ, "GIT_AUTHOR_NAME": "t", "GIT_AUTHOR_EMAIL": "t@t", "GIT_COMMITTER_NAME": "t",
            "GIT_COMMITTER_EMAIL": "t@t"}
@@ -205,14 +206,15 @@ class Choices(Tmp):
 
     def test_first_video_asks_with_the_default_first(self):
         res = self.ask()
-        self.assertEqual([q["key"] for q in res["ask"]], ["audience", "show", "environment"])
+        self.assertEqual([q["key"] for q in res["ask"]], ["audience", "show", "environment", "sources"])
         self.assertEqual(res["ask"][0]["options"][0]["label"], "Developer new to the area (Recommended)")
         self.assertTrue(all(2 <= len(q["options"]) <= 4 for q in res["ask"]))
         self.assertEqual(res["use"], {})
 
     def test_the_request_settles_and_labels_become_values(self):
-        res = self.ask(given={"audience": "QA or tester", "show": "code"})
+        res = self.ask(given={"audience": "QA or tester", "show": "code", "sources": "Code only"})
         self.assertEqual(res["use"]["audience"]["value"], "qa")
+        self.assertEqual(res["use"]["sources"]["value"], "code-only")
         self.assertEqual(res["ask"], [])  # code only: no environment question
         self.assertIn("you asked for it", res["say"])
 
@@ -225,7 +227,7 @@ class Choices(Tmp):
         self.write(".kt-studio/instructions.md", "# I\n")
         res = self.ask(given={"audience": "qa"})
         self.assertEqual(res["use"]["show"]["from"], "no app")
-        self.assertEqual(res["ask"], [])
+        self.assertEqual([q["key"] for q in res["ask"]], ["sources"])
 
     def test_record_saves_the_feature_and_the_run(self):
         out = self.dir / ".kt-studio"
@@ -262,6 +264,55 @@ class Choices(Tmp):
         res = run("python3", SCRIPTS / "choices.py", "ask", self.dir, "Bad Name", check=False)
         self.assertNotEqual(res.returncode, 0)
         self.assertIn("lowercase letters", res.stderr)
+
+
+class Sources(Tmp):
+    def setUp(self):
+        super().setUp()
+        self.write(".kt-studio/config.yml", "project: Acme\nknowledge:\n  - docs/\n  - ~/kt-no-such-notes/   # mine\n"
+                                            "  - https://wiki.acme.example/shop\n  - \"connector: Help center space\"\n"
+                                            "  - specs/missing.md\nvoice:\n  name: af_heart\n")
+        (self.dir / "docs").mkdir()
+        self.proj = project.find(self.dir)
+
+    def test_each_kind_of_entry(self):
+        got = {s["entry"]: s for s in sources.collect(self.proj)["sources"]}
+        self.assertEqual(list(got), ["docs/", "~/kt-no-such-notes/", "https://wiki.acme.example/shop",
+                                     "connector: Help center space", "specs/missing.md"])
+        self.assertEqual((got["docs/"]["kind"], got["docs/"]["there"]), ("project", True))
+        self.assertEqual((got["~/kt-no-such-notes/"]["kind"], got["~/kt-no-such-notes/"]["there"]), ("outside", False))
+        self.assertEqual(got["https://wiki.acme.example/shop"]["kind"], "link")
+        self.assertEqual(got["connector: Help center space"]["what"], "Help center space")
+        check = run("python3", SCRIPTS / "sources.py", self.dir, "--check").stdout
+        self.assertIn("~/kt-no-such-notes/", check)
+        self.assertIn("specs/missing.md", check)
+        self.assertNotIn("docs/", check)
+
+    def test_code_only_keeps_the_features_own_places(self):
+        choices.record(self.proj, "refunds", {"sources": "Code only"}, ["sources"], [], None, "",
+                       ["docs/refunds.md", "https://wiki.acme.example/refunds"])
+        got = sources.collect(self.proj, "refunds")
+        self.assertTrue(got["code_only"])
+        self.assertEqual([s["entry"] for s in got["sources"]], ["docs/refunds.md", "https://wiki.acme.example/refunds"])
+        self.assertEqual(choices.read_yml(self.proj.learned), {"sources": ["code-only"]})
+
+    def test_the_question_names_the_projects_sources(self):
+        res = choices.ask(self.proj, "refunds", ["sources"], {}, {})
+        first = res["ask"][0]["options"][0]
+        self.assertEqual((first["value"], first["label"]), ("project", "Code and the project's sources (Recommended)"))
+        self.assertIn("docs/", first["description"])
+
+    def test_empty_list_means_code_only(self):
+        self.write(".kt-studio/config.yml", "project: Acme\nknowledge: []\n")
+        self.assertEqual(sources.collect(project.find(self.dir))["sources"], [])
+
+    def test_detect_finds_wiki_links_but_not_app_addresses(self):
+        self.write("README.md", "Rules: https://acme.atlassian.net/wiki/spaces/SHOP/pages/1. App: https://shop.qa.acme.example\n")
+        self.write("CLAUDE.md", "Spec: https://docs.google.com/document/d/abc/edit\n")
+        got = json.loads(run("python3", SCRIPTS / "detect.py", self.dir, "--knowledge").stdout)
+        self.assertEqual(sorted(link["url"] for link in got["links"]),
+                         ["https://acme.atlassian.net/wiki/spaces/SHOP/pages/1", "https://docs.google.com/document/d/abc/edit"])
+        self.assertIn("docs/", got["in_project"])
 
 
 class LoginSafety(Tmp):

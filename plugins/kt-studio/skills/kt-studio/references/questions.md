@@ -25,7 +25,13 @@ python3 <skill>/scripts/choices.py ask <root> <feature-slug> --given '{"audience
 
 `--given` holds only what the request says, as values: `audience` (`developer`, `qa`, `product`,
 `support`), `show` (`screens-and-code`, `screens`, `code`), `environment` (a column of `## Addresses`),
-and `language` when the request names one. Leave out what it does not say.
+`sources` (`project`, or `code-only` for "code only, skip the docs"), and `language` when the request
+names one. Leave out what it does not say.
+
+**The sources question** asks what the research reads besides the code: the project's `knowledge:` list
+(its answer lists them) or code only. When the request or the "Other" answer names extra places (a spec,
+a folder, a ticket link), keep `sources: project` (or `code-only` when the person said so) and save each
+place with `--knowledge` (section 4): they are read for this feature only, after the project's list.
 
 It prints JSON:
 
@@ -78,6 +84,9 @@ python3 <skill>/scripts/choices.py record <root> <feature-slug> --run <run> \
   A label from AskUserQuestion is turned into its value; an "Other" answer is kept in the person's words.
 - `--learn`: only the keys the person answered in this round or the request said. Never the ones settled
   by `feature.yml`, `learned.yml` or the instructions: counting them again would teach nothing.
+- `--knowledge`: a place to read for this feature only, one per flag: a folder or file in the project,
+  one outside it (`~/notes/refunds/`), a web link, or `connector: <what>` for a tool connected in Claude
+  Code. It is kept in `feature.yml` under `knowledge` and read by every later video of this feature.
 - `--note`: round 2 answers that are not one of the fixed questions. They are kept in `feature.yml`,
   so the next video of this feature (and `/kt-studio:update`) knows them.
 - `--title`: the feature's name in plain words, the first time.
@@ -89,7 +98,7 @@ when `feature.yml` is new: "Saved this feature's answers in .kt-studio/features/
 ## 5. What the next video learns
 
 - **The same feature again** (a new video, or `/kt-studio:update`): `feature.yml` settles audience,
-  what to show and depth, and its notes say which flows and example were chosen. Round 1 is usually one
+  what to show, the sources and depth, and its notes say which flows and example were chosen. Round 1 is usually one
   line; round 2 asks only what the new request changes.
 - **Another feature in the same project:** the recommended answer is the one picked most often, and a
   question stops once the same answer was picked 3 times in a row (not the environment or the depth).

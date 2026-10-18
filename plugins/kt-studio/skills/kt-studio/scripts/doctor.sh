@@ -103,6 +103,10 @@ if [ "$KT_LAYOUT" != none ]; then
     && ! sed -n '/^##[[:space:]]*Logging in/,/^##[[:space:]]/p' "$KT_INSTRUCTIONS" | grep -qiE '^\|.*How'; then
     tip "## Logging in in $instructions is written as sentences: make it a table (Service | Environment | How | The person runs | Session file) so every run follows it exactly. /kt-studio:init can draft it"
   fi
+  # A knowledge source that is not on this computer: research skips it.
+  while IFS= read -r missing; do
+    [ -n "$missing" ] && tip "$missing: research skips it. Fix the path under knowledge: in $(rel "$YML"), or delete the line"
+  done < <(python3 "$SKILL_DIR/scripts/sources.py" "$ROOT" --check 2>/dev/null)
   WORD_TIMING="$(sed -n 's/^[[:space:]]*word_timing:[[:space:]]*\([a-z]*\).*/\1/p' "$YML" | head -1)"
   VOICE="$(sed -n '/^voice:/,/^[^[:space:]#]/s/^[[:space:]]*name:[[:space:]]*\([a-z_]*\).*/\1/p' "$YML" | head -1)"
 else

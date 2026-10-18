@@ -103,8 +103,9 @@ project up, `/kt-studio:update <feature> [change]` changes a video, `/kt-studio:
 - **Ask, round 1** (`references/questions.md`): `python3 <skill>/scripts/choices.py ask <root> <feature-slug>
   --given '<what the request says>'`. Say its `say` line; put its `ask` questions (at most 4) to the
   person in one AskUserQuestion call, the recommended answer first; then save every answer with
-  `choices.py record ... --run <run>`. Nothing to ask: say the line and go on. The answers (audience,
-  what to show, environment) hold for the whole run.
+  `choices.py record ... --run <run>` (extra places to read for this feature: `--knowledge`). Nothing
+  to ask: say the line and go on. The answers (audience, what to show, environment, what the research
+  reads besides the code) hold for the whole run.
 
 ## 1. Refresh the runtime (only when the doctor asks)
 
@@ -123,7 +124,9 @@ When it prints `needs a download (...)` (exit 3), it changed nothing: stop and t
 
 Follow `references/research.md`. It works for any language and stack:
 
-- Read what people wrote first (the `knowledge` docs, READMEs, API contracts, tests, history), then
+- Read what people wrote first: the sources the person picked (`python3 <skill>/scripts/sources.py <root>
+  <feature-slug> --run <run>` lists them: folders, links, connected tools), then READMEs, API contracts,
+  tests and history. Then
   search every repo at its ref by every name the feature goes by.
 - Map the layers (screens, client calls, server entry, rules, data, side effects, settings, tests)
   and trace the main flow hop by hop from the button the user clicks to what is stored and back.

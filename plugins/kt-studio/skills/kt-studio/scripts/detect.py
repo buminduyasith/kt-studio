@@ -2,14 +2,19 @@
 """Looks around a project: a draft .kt-studio/config.yml and draft "## Services" and "## Addresses" tables
 for `init`, or the app addresses a run could show.
 
-Usage: python3 detect.py <project-root>           draft config.yml + draft tables for instructions.md
-       python3 detect.py <project-root> --apps    candidate app addresses for one run, best first, with
-                                                  the service, the environment, where each was found and
-                                                  whether it answers right now
+Usage: python3 detect.py <project-root>              draft config.yml + draft tables for instructions.md
+       python3 detect.py <project-root> --apps       candidate app addresses for one run, best first, with
+                                                     the service, the environment, where each was found and
+                                                     whether it answers right now
+       python3 detect.py <project-root> --knowledge  candidate knowledge sources as JSON: docs in the
+                                                     project, and links to wikis and shared docs that the
+                                                     project's own files mention (for init's question)
 
 Finds, without running anything or reading secrets:
 - git repos (the root and folders up to two levels down) with their default branch,
-- docs to read first (README, docs folders, API contracts, architecture notes),
+- docs to read first (README, docs folders, API contracts, architecture notes), and links to wikis and
+  shared docs (Confluence, Notion, Google Docs, SharePoint, GitHub wikis, ...) that README, CLAUDE.md
+  and the docs mention,
 - app URLs in the project's own files (the ## Addresses table of the instructions, CLAUDE.md, README,
   package.json, compose files, launch configs, example env files, framework configs), with where each
   was found.
@@ -133,6 +138,24 @@ def find_docs(root: Path) -> list[str]:
                 docs.append(rel)
     readme_first = sorted(docs, key=lambda d: (not d.lower().startswith("readme"), d.count("/"), d))
     return readme_first[:12]
+
+
+WIKI_URL = re.compile(r"https?://[^\s\"'<>)`\]]*(?:confluence|atlassian\.net/wiki|notion\.(?:so|site)|docs\.google\.com|"
+                      r"sharepoint\.com|/wiki\b|gitbook\.io|readme\.io|coda\.io|slab\.com|outline\.)[^\s\"'<>)`\]]*", re.I)
+
+
+def find_links(root: Path) -> list[dict]:
+    """Links to wikis and shared docs in the project's own notes: (url, where), most mentioned first."""
+    files = [root / n for n in ("CLAUDE.md", ".claude/CLAUDE.md")]
+    files += [p for p in walk(root, 3) if p.is_file() and p.suffix.lower() in (".md", ".rst", ".adoc", ".txt")
+              and ".kt-studio" not in p.parts]
+    seen: dict[str, set] = defaultdict(set)
+    for f in files:
+        if f.is_file():
+            for url in WIKI_URL.findall(read(f)):
+                seen[url.rstrip(".,;:")].add(f.relative_to(root).as_posix())
+    ranked = sorted(seen.items(), key=lambda kv: (-len(kv[1]), kv[0]))
+    return [{"url": u, "found_in": sorted(w)[:3]} for u, w in ranked[:8]]
 
 
 def read(path: Path) -> str:
@@ -263,11 +286,14 @@ def scalar(value: str) -> str:
 
 
 def main() -> None:
-    if len(sys.argv) not in (2, 3) or (len(sys.argv) == 3 and sys.argv[2] != "--apps"):
-        sys.exit("usage: python3 detect.py <project-root> [--apps]")
+    if len(sys.argv) not in (2, 3) or (len(sys.argv) == 3 and sys.argv[2] not in ("--apps", "--knowledge")):
+        sys.exit("usage: python3 detect.py <project-root> [--apps | --knowledge]")
     root = Path(sys.argv[1]).resolve()
     if not root.is_dir():
         sys.exit(f"no such folder: {root}")
+    if len(sys.argv) == 3 and sys.argv[2] == "--knowledge":
+        print(json.dumps({"in_project": find_docs(root), "links": find_links(root)}, indent=2))
+        return
     if len(sys.argv) == 3:
         candidate_apps(root)
         return
@@ -291,8 +317,10 @@ def main() -> None:
         print(f"    label: {repo['key'].replace('-', ' ').title()}")
         line(f"    ref: {repo['ref']}", f"CONFIRM the branch the tour reads{note}")
     print()
-    print("knowledge:")
+    line("knowledge:", "CONFIRM where research reads before the code: [] means code only")
     print("\n".join(f"  - {d}" for d in docs) if docs else "  []")
+    for link in find_links(root)[:5]:
+        print(f"  # - {link['url']}    # CONFIRM: a link found in {', '.join(link['found_in'])}")
     print()
     print("voice:")
     print("  engine: kokoro")

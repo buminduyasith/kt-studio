@@ -51,7 +51,8 @@ bash <skill>/scripts/doctor.sh <root> --data <data>
 python3 <skill>/scripts/detect.py <root>
 ```
 
-It prints a draft `config.yml` (the git repos with their default branches, the docs to read first) and
+It prints a draft `config.yml` (the git repos with their default branches, the docs to read first, and
+links to wikis and shared docs that the project's files mention, as comments) and
 draft `## Services` and `## Addresses` tables: the app addresses found in the project's own files
 (CLAUDE.md, README, compose files, launch configs, example env files), the environment each looks like
 (`local`, or `dev` / `qa` from the host name) and where each was found. It never reads a real `.env`
@@ -71,11 +72,27 @@ guess as the first option:
    or missing? Which environment should a video use when the request does not say (the default)? No
    app to show (a CLI, a library, a worker): videos show the code and real terminal commands instead.
 2. **The code tour:** which repos it may show, and the default branch for each.
-3. **Voice:** `af_heart` (US female, default), `am_michael` (US male), `bf_emma` (UK female); speed 0.9.
-4. **Anything the project needs every run** (which data or account to use, who to tell, how to deliver).
+3. **Where research reads, besides the code** (`knowledge:` in config.yml). Run
+   `python3 <skill>/scripts/detect.py <root> --knowledge`: it lists the docs in the project and the
+   links to wikis and shared docs that README, CLAUDE.md and the docs mention. Ask one question with
+   `multiSelect: true`, at most 4 answers: the docs it found (one answer, recommended, naming them),
+   the links it found (one answer per link, or one for all of them), and **Code only**. Say in the
+   question that "Other" takes anything else, one per line:
+   - a folder or file in the project (`docs/refunds/`, `specs/`);
+   - a folder or file outside it (`~/notes/shop/`): it works only on computers that have it, and the
+     doctor shows a tip where it is missing, so suggest copying it into the project when the team needs it;
+   - a web link: research reads it with the web fetch tool and never logs in. A page that needs a login
+     is skipped, so suggest saving it as a file in the project;
+   - a wiki or drive the person reads through a tool connected in Claude Code: `connector: <what to read>`,
+     written in quotes in config.yml, for example `- "connector: Help center space, Refunds pages"`.
+
+   Write the picks under `knowledge:`, in the order they should be read; **Code only** is `knowledge: []`.
+   Each video can still change this for itself (`references/questions.md`, the sources question).
+4. **Voice:** `af_heart` (US female, default), `am_michael` (US male), `bf_emma` (UK female); speed 0.9.
+5. **Anything the project needs every run** (which data or account to use, who to tell, how to deliver).
    This goes in `instructions.md`.
 
-5. **Logging in**, only for services with screens: how do people log in, per environment? Draft the
+6. **Logging in**, only for services with screens: how do people log in, per environment? Draft the
    `## Logging in` table (`references/config.md`) from the docs: `none`, `window` (the default: KT Studio
    opens a window and the person logs in their own way), or `script` when the team has its own login
    command (the CLAUDE.md, a test guide or older instructions often name it), with the command the person

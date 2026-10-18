@@ -24,7 +24,17 @@ start from guesses about the framework. Find the entry point the user touches an
 
 In this order, skimming for the feature's names, rules and numbers:
 
-1. The `knowledge` docs from the config (`.kt-studio/config.yml`).
+1. **The sources the person picked.** `python3 <skill>/scripts/sources.py <root> <feature-slug> --run <run>`
+   lists them: the project's `knowledge:` list (skipped when this video is "code only") and the
+   feature's own (`feature.yml`). Read every one, in that order:
+   - `project`: files and folders in the project. Read the parts about the feature; cite them as `path`.
+   - `outside`: a folder or file outside the project. Read only; never copy it into the run or the
+     video; cite it by its path.
+   - `link`: read it with the web fetch tool. Never log in. A page that asks for a login or shows
+     nothing useful: skip it, say so in the brief, and ask the person to paste it or save it as a file.
+   - `connector`: read it with a tool already connected in Claude Code (a wiki or a drive), read only.
+     No such tool: skip it and say so; never ask the person to connect one in the middle of a run.
+   - `NOT FOUND`: skip it and say so in the brief.
 2. READMEs at each repo root and inside the feature's folders; `docs/`, ADRs, design notes, runbooks.
 3. Contracts: OpenAPI or Swagger files, GraphQL schemas, `.proto` files, AsyncAPI, JSON schemas.
 4. Words users see: translation files (`en.json`, `messages.properties`, `.po`, `.resx`, `strings.xml`).
@@ -122,6 +132,8 @@ skimmed ones.
 # <Feature>: brief
 **In one sentence:** ...
 **Audience and goal:** QA, so they can test it end to end.
+**Read first:** docs/refunds/ (the refund rules), https://wiki.acme.example/refunds (skipped: needs a
+login). Code only: no.
 
 ## Flows (Part A)
 1. <Role> on <screen>: step, step, step. Result.
