@@ -1,0 +1,54 @@
+# Checks every pull request (and every push to main). Nothing here needs a Claude account or a secret,
+# and nothing is downloaded beyond Claude Code itself. The evals (plugin/evals) are not run here: they
+# start real Claude sessions and need an API key; run them by hand before a release (docs/publishing.md).
+name: Validate plugin
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  plugin:
+    name: Plugin files
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+      - name: Install Claude Code
+        run: npm install -g @anthropic-ai/claude-code@2.1.301
+      - name: Marketplace is valid
+        run: claude plugin validate . --strict
+      - name: Plugin is valid
+        run: claude plugin validate plugins/kt-studio --strict
+      - name: JSON files parse
+        run: |
+          for f in .claude-plugin/marketplace.json plugins/kt-studio/.claude-plugin/plugin.json \
+                   plugins/kt-studio/skills/kt-studio/assets/studio/package.json; do
+            python3 -m json.tool "$f" >/dev/null || { echo "bad JSON: $f"; exit 1; }
+          done
+
+  scripts:
+    name: Scripts and tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.9"
+      - name: Tools a user has (ffmpeg)
+        run: sudo apt-get update -q && sudo apt-get install -y -q ffmpeg
+      - name: Shell scripts (shellcheck)
+        run: shellcheck -S warning plugins/kt-studio/skills/kt-studio/scripts/*.sh
+      - name: Python scripts compile (3.9, the oldest the plugin supports)
+        run: python3 -m py_compile plugins/kt-studio/skills/kt-studio/scripts/*.py tests/*.py
+      - name: Tests (settings folder, tables, logins, migration, clean-up, no-download rule, skill files)
+        run: python3 -m unittest discover -s tests -v

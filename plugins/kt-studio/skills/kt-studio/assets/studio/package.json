@@ -1,0 +1,18 @@
+{
+  "name": "kt-studio-runtime",
+  "private": true,
+  "description": "Runtime for kt-studio: records UI demos and code tours with Argo, Playwright and an offline Kokoro voice.",
+  "devDependencies": {
+    "@argo-video/cli": "0.41.0",
+    "@playwright/test": "1.64.0",
+    "playwright": "1.64.0",
+    "shiki": "4.5.0"
+  },
+  "dependencies": {
+    "kokoro-js": "1.2.1"
+  },
+  "overrides": {
+    "sharp": "0.35.5",
+    "global-agent": "4.1.3"
+  }
+}

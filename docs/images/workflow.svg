@@ -1,0 +1,213 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1240 810" width="1240" height="810" role="img" aria-labelledby="title desc">
+  <title id="title">What happens in a KT Studio run</title>
+  <desc id="desc">Eleven steps in four phases. Prepare: check and set up. Plan: research, screens, storyboard, then gate 1 where you approve. Make: scripts, rehearse, record after your yes to any writes (gate 2). Finish: check, deliver, clean up. Below, the one-time init flow for a new project.</desc>
+  <defs>
+    <style>
+      :root {
+        --bg: #ffffff; --ink: #1f2328; --muted: #59636e; --line: #8c959f; --chipline: #d1d9e0; --card: #ffffff;
+        --prep-f: #fff1e5; --prep-s: #bc4c00; --plan-f: #ddf4ff; --plan-s: #0969da; --make-f: #dafbe1; --make-s: #1a7f37;
+        --fin-f: #ffeff7; --fin-s: #bf3989; --you-f: #fbefff; --you-s: #8250df; --init-f: #f6f8fa;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #0d1117; --ink: #e6edf3; --muted: #9198a1; --line: #6e7681; --chipline: #3d444d; --card: #0d1117;
+          --prep-f: #33200f; --prep-s: #f0883e; --plan-f: #0c2541; --plan-s: #4493f8; --make-f: #0f2a19; --make-s: #3fb950;
+          --fin-f: #321a28; --fin-s: #f778ba; --you-f: #231a33; --you-s: #ab7df8; --init-f: #151b23;
+        }
+      }
+      text { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; fill: var(--ink); }
+      .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+      .h1 { font-size: 28px; font-weight: 700; }
+      .sub { font-size: 15px; fill: var(--muted); }
+      .phase { font-size: 12px; font-weight: 700; letter-spacing: 1.5px; }
+      .t { font-size: 16px; font-weight: 700; }
+      .b { font-size: 13.5px; }
+      .m { font-size: 12.5px; fill: var(--muted); }
+      .note { font-size: 12.5px; font-weight: 600; }
+      .num { font-size: 14px; font-weight: 700; fill: #ffffff; }
+      .bg { fill: var(--bg); }
+      .prep { fill: var(--prep-f); stroke: var(--prep-s); stroke-width: 2; }
+      .plan { fill: var(--plan-f); stroke: var(--plan-s); stroke-width: 2; }
+      .make { fill: var(--make-f); stroke: var(--make-s); stroke-width: 2; }
+      .fin { fill: var(--fin-f); stroke: var(--fin-s); stroke-width: 2; }
+      .you { fill: var(--you-f); stroke: var(--you-s); stroke-width: 2.5; }
+      .init { fill: var(--init-f); stroke: var(--chipline); stroke-width: 1.5; }
+      .pill { fill: var(--card); stroke: var(--chipline); stroke-width: 1.5; }
+      .c-prep { fill: var(--prep-s); } .c-plan { fill: var(--plan-s); } .c-make { fill: var(--make-s); }
+      .c-fin { fill: var(--fin-s); } .c-you { fill: var(--you-s); }
+      .s-prep { stroke: var(--prep-s); } .s-plan { stroke: var(--plan-s); } .s-make { stroke: var(--make-s); } .s-fin { stroke: var(--fin-s); }
+      .rule { stroke-width: 2; }
+      .arrow { stroke: var(--line); stroke-width: 2; fill: none; marker-end: url(#head); }
+      .labelbg { fill: var(--bg); }
+    </style>
+    <marker id="head" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#8c959f"/>
+    </marker>
+  </defs>
+
+  <rect class="bg" x="0" y="0" width="1240" height="810" rx="16"/>
+  <text class="h1" x="37" y="54">What happens when you run <tspan class="mono" font-size="25">/kt-studio:make &lt;feature&gt;</tspan></text>
+  <text class="sub" x="37" y="82">Eleven steps. Two gates wait for you. Purple means you are involved.</text>
+
+  <!-- Phase labels, row 1 -->
+  <text class="phase c-prep" x="37" y="128">PREPARE</text>
+  <line class="s-prep rule" x1="37" y1="136" x2="409" y2="136"/>
+  <text class="phase c-plan" x="433" y="128">PLAN</text>
+  <line class="s-plan rule" x1="433" y1="136" x2="1203" y2="136"/>
+
+  <!-- Row 1 cards: x = 37, 235, 433, 631, 829; gate at 1027 -->
+  <g>
+    <rect class="prep" x="37" y="150" width="176" height="150" rx="14"/>
+    <circle class="c-prep" cx="63" cy="180" r="15"/><text class="num" x="63" y="185" text-anchor="middle">0</text>
+    <text class="t" x="87" y="186">Check</text>
+    <text class="b" x="53" y="222">Tools, settings,</text>
+    <text class="b" x="53" y="241">recorder and voice</text>
+    <text class="note c-prep" x="53" y="282">under a second</text>
+  </g>
+  <path class="arrow" d="M213,225 L233,225"/>
+  <g>
+    <rect class="prep" x="235" y="150" width="176" height="150" rx="14"/>
+    <circle class="c-prep" cx="261" cy="180" r="15"/><text class="num" x="261" y="185" text-anchor="middle">1</text>
+    <text class="t" x="285" y="186">Set up</text>
+    <text class="b" x="251" y="222">Only when the check</text>
+    <text class="b" x="251" y="241">asks: about 1 GB</text>
+    <text class="note c-prep" x="251" y="282">first run, updates</text>
+  </g>
+  <path class="arrow" d="M411,225 L431,225"/>
+  <g>
+    <rect class="plan" x="433" y="150" width="176" height="150" rx="14"/>
+    <circle class="c-plan" cx="459" cy="180" r="15"/><text class="num" x="459" y="185" text-anchor="middle">2</text>
+    <text class="t" x="483" y="186">Research</text>
+    <text class="b" x="449" y="222">Docs, then the code</text>
+    <text class="b" x="449" y="241">at your branch</text>
+    <text class="note c-plan" x="449" y="282">facts with file:line</text>
+  </g>
+  <path class="arrow" d="M609,225 L629,225"/>
+  <g>
+    <rect class="plan" x="631" y="150" width="176" height="150" rx="14"/>
+    <circle class="c-plan" cx="657" cy="180" r="15"/><text class="num" x="657" y="185" text-anchor="middle">3</text>
+    <text class="t" x="681" y="186">Screens</text>
+    <text class="b" x="647" y="222">A screenshot of each</text>
+    <text class="b" x="647" y="241">planned screen</text>
+    <text class="note c-plan" x="647" y="282">stops before writes</text>
+  </g>
+  <path class="arrow" d="M807,225 L827,225"/>
+  <g>
+    <rect class="you" x="829" y="150" width="176" height="150" rx="14"/>
+    <circle class="c-plan" cx="855" cy="180" r="15"/><text class="num" x="855" y="185" text-anchor="middle">4</text>
+    <text class="t" x="879" y="186">Storyboard</text>
+    <text class="b" x="845" y="222">Scenes, voice lines,</text>
+    <text class="b" x="845" y="241">code, as a web page</text>
+    <text class="note c-you" x="845" y="282">&#8635; until you approve</text>
+  </g>
+  <path class="arrow" d="M1005,225 L1043,225"/>
+
+  <!-- Gate 1 -->
+  <path class="you" d="M1115,152 L1188,225 L1115,298 L1042,225 Z"/>
+  <text class="t c-you" x="1115" y="221" text-anchor="middle">Gate 1</text>
+  <text class="b" x="1115" y="241" text-anchor="middle">you approve</text>
+
+  <!-- Connector from gate 1 to row 2 -->
+  <path class="arrow" d="M1115,298 L1115,346 L125,346 L125,416"/>
+  <rect class="labelbg" x="520" y="334" width="200" height="24"/>
+  <text class="m" x="620" y="351" text-anchor="middle">nothing is recorded before this</text>
+
+  <!-- Phase labels, row 2 -->
+  <text class="phase c-make" x="37" y="398">MAKE</text>
+  <line class="s-make rule" x1="140" y1="406" x2="607" y2="406"/>
+  <line class="s-make rule" x1="37" y1="406" x2="110" y2="406"/>
+  <text class="phase c-fin" x="631" y="398">FINISH</text>
+  <line class="s-fin rule" x1="631" y1="406" x2="1203" y2="406"/>
+
+  <!-- Row 2 cards: x = 37, 235, 433, 631, 829, 1027 -->
+  <g>
+    <rect class="make" x="37" y="420" width="176" height="150" rx="14"/>
+    <circle class="c-make" cx="63" cy="450" r="15"/><text class="num" x="63" y="455" text-anchor="middle">5</text>
+    <text class="t" x="87" y="456">Scripts</text>
+    <text class="b" x="53" y="492">Each action waits</text>
+    <text class="b" x="53" y="511">for its spoken word</text>
+    <text class="note c-make" x="53" y="552">screens and code tour</text>
+  </g>
+  <path class="arrow" d="M213,495 L233,495"/>
+  <g>
+    <rect class="make" x="235" y="420" width="176" height="150" rx="14"/>
+    <circle class="c-make" cx="261" cy="450" r="15"/><text class="num" x="261" y="455" text-anchor="middle">6</text>
+    <text class="t" x="285" y="456">Rehearse</text>
+    <text class="b" x="251" y="492">Voice, word times,</text>
+    <text class="b" x="251" y="511">then a dry run</text>
+    <text class="note c-make" x="251" y="552">&#8635; writes are blocked</text>
+  </g>
+  <path class="arrow" d="M411,495 L431,495"/>
+  <g>
+    <rect class="you" x="433" y="420" width="176" height="150" rx="14"/>
+    <circle class="c-make" cx="459" cy="450" r="15"/><text class="num" x="459" y="455" text-anchor="middle">7</text>
+    <text class="t" x="483" y="456">Record</text>
+    <rect x="541" y="438" width="58" height="22" rx="11" class="c-you"/>
+    <text x="570" y="453" text-anchor="middle" font-size="11.5" font-weight="700" fill="#ffffff">Gate 2</text>
+    <text class="b" x="449" y="492">The screens, then</text>
+    <text class="b" x="449" y="511">the code tour</text>
+    <text class="note c-you" x="449" y="552">after your yes to writes</text>
+  </g>
+  <path class="arrow" d="M609,495 L629,495"/>
+  <g>
+    <rect class="fin" x="631" y="420" width="176" height="150" rx="14"/>
+    <circle class="c-fin" cx="657" cy="450" r="15"/><text class="num" x="657" y="455" text-anchor="middle">8</text>
+    <text class="t" x="681" y="456">Check</text>
+    <text class="b" x="647" y="492">Blinks, sync, each</text>
+    <text class="b" x="647" y="511">scene vs storyboard</text>
+    <text class="note c-fin" x="647" y="552">&#8635; redo only failures</text>
+  </g>
+  <path class="arrow" d="M807,495 L827,495"/>
+  <g>
+    <rect class="fin" x="829" y="420" width="176" height="150" rx="14"/>
+    <circle class="c-fin" cx="855" cy="450" r="15"/><text class="num" x="855" y="455" text-anchor="middle">9</text>
+    <text class="t" x="879" y="456">Deliver</text>
+    <text class="b" x="845" y="492">Videos, subtitles,</text>
+    <text class="b" x="845" y="511">chapters, one file</text>
+    <text class="note c-fin" x="845" y="552">with a short summary</text>
+  </g>
+  <path class="arrow" d="M1005,495 L1025,495"/>
+  <g>
+    <rect class="fin" x="1027" y="420" width="176" height="150" rx="14"/>
+    <circle class="c-fin" cx="1053" cy="450" r="15"/><text class="num" x="1053" y="455" text-anchor="middle" font-size="12.5">10</text>
+    <text class="t" x="1077" y="456">Clean up</text>
+    <text class="b" x="1043" y="492">Stops browsers</text>
+    <text class="b" x="1043" y="511">and servers</text>
+    <text class="note c-fin" x="1043" y="552">even after a failure</text>
+  </g>
+
+  <!-- Init -->
+  <rect class="init" x="37" y="612" width="1166" height="168" rx="16"/>
+  <text class="t" x="59" y="644">First time in a project: <tspan class="mono" font-size="15">/kt-studio:init</tspan></text>
+  <text class="m" x="59" y="665">Once per project. After that, step 0 above only checks, and runs setup again when the plugin is updated.</text>
+
+  <g>
+    <rect class="pill" x="57" y="688" width="143" height="68" rx="12"/>
+    <text class="b" x="128" y="716" text-anchor="middle" font-weight="700">Check</text>
+    <text class="m" x="128" y="737" text-anchor="middle">this computer</text>
+    <path class="arrow" d="M200,722 L218,722"/>
+    <rect class="pill" x="220" y="688" width="143" height="68" rx="12"/>
+    <text class="b" x="291" y="716" text-anchor="middle" font-weight="700">Detect</text>
+    <text class="m" x="291" y="737" text-anchor="middle">repos, URLs, docs</text>
+    <path class="arrow" d="M363,722 L381,722"/>
+    <rect class="you" x="383" y="688" width="143" height="68" rx="12"/>
+    <text class="b" x="454" y="716" text-anchor="middle" font-weight="700">Ask you</text>
+    <text class="m" x="454" y="737" text-anchor="middle">only what is unknown</text>
+    <path class="arrow" d="M526,722 L544,722"/>
+    <rect class="pill" x="546" y="688" width="143" height="68" rx="12"/>
+    <text class="b" x="617" y="716" text-anchor="middle" font-weight="700">Write</text>
+    <text class="m" x="617" y="737" text-anchor="middle">the two settings files</text>
+    <path class="arrow" d="M689,722 L707,722"/>
+    <rect class="pill" x="709" y="688" width="143" height="68" rx="12"/>
+    <text class="b" x="780" y="716" text-anchor="middle" font-weight="700">Install</text>
+    <text class="m" x="780" y="737" text-anchor="middle">about 1 GB, once</text>
+    <path class="arrow" d="M852,722 L870,722"/>
+    <rect class="pill" x="872" y="688" width="143" height="68" rx="12"/>
+    <text class="b" x="943" y="716" text-anchor="middle" font-weight="700">Live test</text>
+    <text class="m" x="943" y="737" text-anchor="middle">browser and voice</text>
+    <path class="arrow" d="M1015,722 L1033,722"/>
+    <rect class="make" x="1035" y="688" width="148" height="68" rx="12"/>
+    <text class="b" x="1109" y="716" text-anchor="middle" font-weight="700">Ready</text>
+    <text class="m" x="1109" y="737" text-anchor="middle">make your first video</text>
+  </g>
+</svg>

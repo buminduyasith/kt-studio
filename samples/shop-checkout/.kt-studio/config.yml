@@ -1,0 +1,37 @@
+# .kt-studio/config.yml for shop-checkout. Never put a password, token or API key in this file.
+
+project: shop-checkout                # shown on storyboards and title screens
+
+metadata: {}
+
+repos:                                # code the tour may show, read from git at each ref
+  - key: order-service                # folders of the kt-studio git repo (a monorepo)
+    path: ./order-service
+    label: Order Service
+    ref: HEAD
+  - key: payment-gateway
+    path: ./payment-gateway
+    label: Payment Gateway
+    ref: HEAD
+  - key: contracts
+    path: ./contracts
+    label: Contracts
+    ref: HEAD
+
+knowledge:                            # where to look first when researching a feature
+  - README.md
+  - docs/
+  - contracts/
+  - order-service/README.md
+  - payment-gateway/README.md
+
+voice:
+  engine: kokoro
+  name: am_michael                    # US male
+  speed: 0.9
+  word_timing: estimate
+  pronounce: {}
+
+review: local                         # no artifact: open storyboard.html locally, comment in the chat
+
+language: simple English

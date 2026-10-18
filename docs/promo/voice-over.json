@@ -1,0 +1,10 @@
+[
+  ["01-command", "Type slash K T Studio, and name a feature. It reads your code, and makes the knowledge transfer video for you."],
+  ["02-storyboard", "First, a storyboard. You review every scene and every line. Nothing is filmed until you approve."],
+  ["03-tour", "Then the code tour. It walks your repo like a teammate would, opens the real file, and explains one idea at a time."],
+  ["04-diagram", "Sequence diagrams show the big picture, from the button to the database."],
+  ["06-sync", "Then it records your real app. Every click lands on the word that names it, and every take is checked."],
+  ["07-stack", "Any language, any stack. No screens? It runs real commands in a terminal."],
+  ["08-update", "Something changed? Record just that scene. It splices in without a seam."],
+  ["09-cta", "KT Studio. Skip the handover meeting. Hand over a video."]
+]

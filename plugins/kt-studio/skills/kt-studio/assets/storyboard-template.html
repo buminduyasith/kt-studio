@@ -1,0 +1,447 @@
+<title>__TITLE__</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap">
+<style>
+/* Layout: a production sheet. Overview on top, then the storyboard as numbered frames grouped by
+   chapter, each frame with its picture, slate, voice line (screenplay style), screen note and action. */
+:root {
+  --paper: #f3f4f6; --sheet: #ffffff; --ink: #18212d; --muted: #5d6877; --line: #dadfe6;
+  --accent: #d9530d; --accent-soft: #fdeee4; --ui: #0f6e66; --code: #3f46b8; --title: #5d6877;
+  --ok: #18794e; --plan: #a35c00; --warn: #b42318; --warn-soft: #fdecea; --frame: #0e141b;
+  --display: "Barlow Condensed", "Arial Narrow", Arial, sans-serif;
+  --body: "IBM Plex Sans", -apple-system, "Segoe UI", Arial, sans-serif;
+  --mono: "IBM Plex Mono", Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #0e1217; --sheet: #161c24; --ink: #e7eaef; --muted: #9ba5b3; --line: #2a323d;
+    --accent: #ff8a46; --accent-soft: #2b1a10; --ui: #4fc3b6; --code: #9aa1ff; --title: #9ba5b3;
+    --ok: #4cc38a; --plan: #f0a64a; --warn: #ff7b6e; --warn-soft: #2d1513; --frame: #05080b; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --paper: #0e1217; --sheet: #161c24; --ink: #e7eaef; --muted: #9ba5b3; --line: #2a323d;
+  --accent: #ff8a46; --accent-soft: #2b1a10; --ui: #4fc3b6; --code: #9aa1ff; --title: #9ba5b3;
+  --ok: #4cc38a; --plan: #f0a64a; --warn: #ff7b6e; --warn-soft: #2d1513; --frame: #05080b; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--paper); color: var(--ink); font: 15px/1.55 var(--body); }
+.wrap { max-width: 1240px; margin: 0 auto; padding-inline: clamp(16px, 4vw, 40px); padding-block: 28px 64px; }
+h1, h2, h3 { text-wrap: balance; margin: 0; }
+code { font-family: var(--mono); font-size: .88em; background: var(--accent-soft); color: var(--ink); padding: 1px 5px; border-radius: 4px; word-break: break-word; }
+.eyebrow { font: 600 12px/1 var(--body); letter-spacing: .14em; text-transform: uppercase; color: var(--accent); }
+.muted { color: var(--muted); }
+
+/* header */
+header.top { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 360px); gap: 28px; align-items: start; border-bottom: 2px solid var(--ink); padding-bottom: 24px; }
+header.top h1 { font: 700 clamp(34px, 5vw, 56px)/1 var(--display); letter-spacing: .01em; margin: 10px 0 12px; }
+header.top .tldr { font-size: 17px; max-width: 64ch; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+.chip { font: 500 12.5px/1 var(--body); padding: 7px 11px; border: 1px solid var(--line); border-radius: 999px; background: var(--sheet); white-space: nowrap; }
+.chip b { font-weight: 600; }
+.chip.status { border-color: var(--plan); color: var(--plan); }
+.chip.status.approved { border-color: var(--ok); color: var(--ok); }
+.howto { background: var(--sheet); border: 1px solid var(--line); border-radius: 10px; padding: 18px 20px; }
+.howto h2 { font: 700 20px/1.1 var(--display); letter-spacing: .02em; margin-bottom: 10px; }
+.howto ol { margin: 0; padding-left: 20px; display: grid; gap: 6px; }
+
+/* nav */
+nav.jump { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--paper); display: flex; gap: 6px; flex-wrap: wrap; padding: 12px 0; border-bottom: 1px solid var(--line); }
+nav.jump a { font: 600 13px/1 var(--body); color: var(--ink); text-decoration: none; padding: 8px 12px; border-radius: 6px; }
+nav.jump a:hover, nav.jump a:focus-visible { background: var(--sheet); outline: 2px solid var(--accent); outline-offset: -2px; }
+
+section { margin-top: 44px; }
+section > h2 { font: 700 30px/1.05 var(--display); letter-spacing: .01em; margin-bottom: 4px; }
+section > .lead { margin: 0 0 20px; }
+
+/* overview */
+.ov { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 18px; }
+.block { background: var(--sheet); border: 1px solid var(--line); border-radius: 10px; padding: 18px 20px; min-width: 0; }
+.block h3 { font: 700 18px/1.15 var(--display); letter-spacing: .03em; text-transform: uppercase; margin-bottom: 10px; }
+.span-7 { grid-column: span 7; } .span-5 { grid-column: span 5; } .span-12 { grid-column: span 12; } .span-4 { grid-column: span 4; } .span-8 { grid-column: span 8; } .span-6 { grid-column: span 6; }
+.block p { margin: 0 0 10px; } .block p:last-child { margin-bottom: 0; }
+.steps { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; counter-reset: s; }
+.steps li { display: grid; grid-template-columns: 30px minmax(0, 1fr); gap: 10px; counter-increment: s; }
+.steps li::before { content: counter(s); font: 700 18px/30px var(--display); text-align: center; background: var(--ink); color: var(--paper); border-radius: 50%; width: 30px; height: 30px; }
+.steps b { display: block; }
+.repos { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; }
+.repos li, .repos .sha { overflow-wrap: anywhere; min-width: 0; }
+.writes.none { background: var(--sheet); border-color: var(--line); } .writes.none h3 { color: var(--ok); }
+.repo { border: 1px solid var(--line); border-radius: 8px; padding: 14px; min-width: 0; }
+.repo .name { font: 500 13px/1.3 var(--mono); word-break: break-all; }
+.repo .label { font: 700 16px/1 var(--display); letter-spacing: .04em; text-transform: uppercase; color: var(--accent); margin-bottom: 6px; }
+.repo ul { margin: 8px 0 0; padding-left: 18px; font: 12.5px/1.5 var(--mono); color: var(--muted); }
+.repo .sha { font: 12px var(--mono); color: var(--muted); }
+dl.kv { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 6px 14px; margin: 0; }
+dl.kv dt { color: var(--muted); } dl.kv dd { margin: 0; }
+ul.plain { margin: 0; padding-left: 18px; display: grid; gap: 6px; }
+.writes { background: var(--warn-soft); border-color: var(--warn); }
+.writes h3 { color: var(--warn); }
+
+/* running order */
+.rundown { display: flex; width: 100%; height: 46px; border-radius: 8px; overflow: hidden; border: 1px solid var(--line); }
+.rundown a { display: flex; align-items: center; justify-content: center; text-decoration: none; color: #fff; font: 600 12px/1.1 var(--body); padding: 0 6px; text-align: center; min-width: 0; overflow: hidden; border-right: 1px solid var(--sheet); }
+.rundown a.A { background: var(--ui); } .rundown a.B { background: var(--code); } .rundown a.planned { background-image: repeating-linear-gradient(135deg, transparent 0 8px, rgba(255,255,255,.18) 8px 16px); }
+.rundown-legend { display: flex; flex-wrap: wrap; gap: 6px 18px; margin-top: 10px; font-size: 13px; }
+.rundown-legend span { font-variant-numeric: tabular-nums; }
+
+/* storyboard */
+.part-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 16px; border-bottom: 2px solid var(--ink); padding-bottom: 8px; }
+.part-head h2 { font: 700 34px/1 var(--display); letter-spacing: .01em; }
+.part-head .tag { font: 700 14px/1 var(--display); letter-spacing: .1em; color: var(--paper); background: var(--ink); padding: 6px 9px; border-radius: 4px; }
+.chapter { margin-top: 28px; }
+.chapter-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 14px; margin-bottom: 14px; }
+.chapter-head h3 { font: 700 22px/1.1 var(--display); letter-spacing: .02em; }
+.chapter-head .tc { font: 500 12.5px var(--mono); color: var(--muted); font-variant-numeric: tabular-nums; }
+.badge { font: 600 11px/1 var(--body); letter-spacing: .08em; text-transform: uppercase; padding: 5px 8px; border-radius: 4px; border: 1px solid currentColor; }
+.badge.planned { color: var(--plan); } .badge.ready { color: var(--ok); }
+.frames { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 360px), 1fr)); gap: 18px; }
+.frame { background: var(--sheet); border: 1px solid var(--line); border-radius: 10px; overflow: hidden; display: flex; flex-direction: column; min-width: 0; scroll-margin-top: 70px; }
+.frame:target { outline: 3px solid var(--accent); outline-offset: 2px; }
+.pic { position: relative; aspect-ratio: 16 / 9; max-width: 100%; background: var(--frame); }
+.pic img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.slate { position: absolute; left: 10px; top: 10px; display: flex; gap: 6px; pointer-events: none; }
+.slate span { font: 700 14px/1 var(--display); letter-spacing: .06em; background: rgba(8, 12, 16, .82); color: #fff; padding: 6px 8px; border-radius: 4px; }
+.slate .kind-ui { box-shadow: inset 0 -3px 0 #2fb3a6; } .slate .kind-code, .slate .kind-nav { box-shadow: inset 0 -3px 0 #8b92ff; } .slate .kind-title { box-shadow: inset 0 -3px 0 #c9ced6; } .slate .kind-diagram { box-shadow: inset 0 -3px 0 #ffc400; } .slate .kind-terminal { box-shadow: inset 0 -3px 0 #23d18b; }
+.card.term .out { flex: 1; overflow: hidden; padding: 10px 12px; font: 10.5px/1.45 var(--mono); white-space: pre-wrap; word-break: break-all; color: #cccccc; }
+.card.term .out .p { color: #23d18b; } .card.term .out mark { background: rgba(255, 196, 0, .25); color: #ffd866; }
+.dur { pointer-events: none; position: absolute; right: 10px; bottom: 10px; font: 500 12px/1 var(--mono); background: rgba(8, 12, 16, .82); color: #fff; padding: 5px 7px; border-radius: 4px; font-variant-numeric: tabular-nums; }
+.sketch { position: absolute; inset: 0; padding: 12% 9% 9%; display: grid; place-items: stretch; }
+.sketch .box { border: 1.5px dashed #6b7686; border-radius: 6px; position: relative; display: grid; grid-template-columns: 1fr 34%; gap: 6px; padding: 8px; }
+.sketch .box i { display: block; border-radius: 3px; background: #2a333f; }
+.sketch .box .side { display: grid; gap: 5px; align-content: start; padding: 6px; border: 1.5px dashed #6b7686; border-radius: 4px; }
+.sketch .box .side i { height: 9px; } .sketch .box .side i.hi { background: #b8792e; }
+.sketch .label { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); font: 600 12px/1.2 var(--body); color: #c9ced6; background: rgba(8, 12, 16, .85); padding: 6px 10px; border-radius: 4px; white-space: nowrap; }
+.body { padding: 14px 16px 16px; display: grid; gap: 10px; flex: 1; align-content: start; }
+.heading { font: 500 11.5px/1.35 var(--mono); color: var(--muted); letter-spacing: .02em; word-break: break-word; }
+.frame h4 { font: 600 16px/1.3 var(--body); margin: 0; }
+.vo { border-left: 3px solid var(--accent); padding: 2px 0 2px 12px; }
+.vo .who { font: 600 11px/1 var(--body); letter-spacing: .14em; text-transform: uppercase; color: var(--accent); margin-bottom: 5px; }
+.vo p { margin: 0; font-size: 15px; }
+.row { display: grid; grid-template-columns: 74px minmax(0, 1fr); gap: 8px; font-size: 13.5px; }
+.row > span:first-child { font: 600 11px/1.7 var(--body); letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+.row ul { margin: 0; padding-left: 16px; }
+.note { background: var(--accent-soft); border-radius: 6px; padding: 7px 10px; font-size: 13.5px; }
+.flags { display: flex; flex-wrap: wrap; gap: 6px; }
+.flag { font: 600 11px/1 var(--body); padding: 5px 8px; border-radius: 4px; color: var(--warn); background: var(--warn-soft); }
+.flag.changed { color: var(--accent); background: var(--accent-soft); }
+.frame.changed { outline: 2px solid var(--accent); outline-offset: -1px; }
+.src { font: 12px/1.3 var(--mono); color: var(--muted); }
+
+/* code, folder and title cards: drawn, not screenshotted */
+.card { position: absolute; inset: 0; display: flex; flex-direction: column; background: #1e1e1e; color: #d4d4d4; }
+.card .bar { display: flex; align-items: center; justify-content: flex-end; gap: 8px; height: 26px; padding: 0 10px 0 150px; background: #252526; border-bottom: 1px solid #333; font: 11px/1 var(--mono); color: #9d9d9d; min-width: 0; }
+.card .bar .dots { display: flex; gap: 5px; } .card .bar .dots i { width: 8px; height: 8px; border-radius: 50%; background: #555; }
+.card .bar .tab { color: #e8e8e8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.card .main { flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 8px; padding: 12px 16px; min-width: 0; }
+.card .repo { font: 600 10.5px/1 var(--body); letter-spacing: .12em; text-transform: uppercase; color: #ffb27d; }
+.card .path { font: 12px/1.4 var(--mono); color: #9cdcfe; word-break: break-all; }
+.card .sym { font: 600 clamp(15px, 2.2vw, 20px)/1.25 var(--mono); color: #dcdcaa; overflow-wrap: anywhere; }
+.card .lines { display: inline-flex; align-self: flex-start; font: 11px/1 var(--mono); color: #1e1e1e; background: #ffc400; padding: 4px 7px; border-radius: 3px; }
+.card .crumbs { font: 13px/1.6 var(--mono); color: #cccccc; word-break: break-word; }
+.card .crumbs b { color: #e8c06e; font-weight: 500; }
+.card.title { align-items: center; justify-content: center; text-align: center; padding: 16px; background: radial-gradient(circle at 50% 40%, #2a2f38, #14171c); }
+.card.title .t { font: 700 clamp(20px, 3vw, 28px)/1.1 var(--display); color: #f2f2f2; letter-spacing: .02em; }
+.card.title .s { font: 13px/1.4 var(--body); color: #a9b1bd; margin-top: 6px; }
+.card.diagram svg { width: 100%; height: 100%; display: block; }
+.card.diagram .act rect { fill: #252526; stroke: #4a4a4a; } .card.diagram .act text { fill: #e6e6e6; font: 600 13px var(--body); }
+.card.diagram .life { stroke: #3a3a3a; stroke-dasharray: 4 4; }
+.card.diagram .m line, .card.diagram .m path { stroke: #8a8a8a; stroke-width: 2; fill: none; } .card.diagram .m polygon { fill: #8a8a8a; }
+.card.diagram .m text { fill: #bdbdbd; font: 11px var(--mono); }
+.card.diagram .m.later { opacity: .22; } .card.diagram .m.done { opacity: .6; }
+.card.diagram .m.now line, .card.diagram .m.now path { stroke: #ffc400; } .card.diagram .m.now polygon { fill: #ffc400; } .card.diagram .m.now text { fill: #ffe7a0; }
+
+/* screenshot zoom: every UI picture opens full size */
+.zoom { all: unset; display: block; width: 100%; height: 100%; cursor: zoom-in; position: relative; }
+.zoom:focus-visible { outline: 3px solid var(--accent); outline-offset: -3px; }
+.zoom .hint { position: absolute; left: 10px; bottom: 10px; font: 600 11.5px/1 var(--body); color: #fff; background: rgba(8, 12, 16, .82); padding: 6px 8px; border-radius: 4px; opacity: 0; transition: opacity .15s; }
+.zoom:hover .hint, .zoom:focus-visible .hint { opacity: 1; }
+@media (hover: none) { .zoom .hint { opacity: 1; } }
+#lightbox { position: fixed; inset: 0; z-index: 50; background: rgba(5, 8, 12, .94); display: grid; grid-template-rows: auto minmax(0, 1fr) auto;
+  padding: calc(env(safe-area-inset-top, 0px) + 12px) 16px calc(env(safe-area-inset-bottom, 0px) + 12px); gap: 10px; color: #f1f3f6; }
+#lightbox[hidden] { display: none; }
+#lightbox .lb-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; font: 600 14px/1.3 var(--body); }
+#lightbox .lb-top .cap { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+#lightbox .lb-top .count { font: 500 12px var(--mono); color: #aab2bd; margin-left: 8px; }
+#lightbox .stage { display: grid; place-items: center; min-height: 0; }
+#lightbox img { max-width: 100%; max-height: 100%; object-fit: contain; border-radius: 6px; box-shadow: 0 20px 60px rgba(0, 0, 0, .6); background: #000; }
+#lightbox .lb-bottom { display: flex; justify-content: center; gap: 10px; }
+#lightbox button { font: 600 13px/1 var(--body); color: #f1f3f6; background: rgba(255, 255, 255, .1); border: 1px solid rgba(255, 255, 255, .22); border-radius: 6px; padding: 10px 14px; cursor: pointer; }
+#lightbox button:hover, #lightbox button:focus-visible { background: rgba(255, 255, 255, .2); outline: none; }
+#lightbox .keys { font: 12px var(--body); color: #aab2bd; align-self: center; }
+@media (max-width: 600px) { #lightbox .keys { display: none; } }
+
+/* review */
+.review { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 18px; }
+.check { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.check li { display: grid; grid-template-columns: 22px minmax(0, 1fr); gap: 8px; }
+.check li::before { content: ""; width: 16px; height: 16px; border: 2px solid var(--muted); border-radius: 3px; margin-top: 3px; }
+table.pron { border-collapse: collapse; font-size: 13.5px; }
+table.pron td { padding: 4px 14px 4px 0; border-bottom: 1px solid var(--line); }
+footer { margin-top: 48px; padding-top: 14px; border-top: 1px solid var(--line); font: 12px/1.5 var(--mono); color: var(--muted); }
+
+@media (max-width: 860px) {
+  header.top { grid-template-columns: minmax(0, 1fr); }
+  .span-7, .span-5, .span-4, .span-8, .span-6 { grid-column: span 12; }
+  .review { grid-template-columns: minmax(0, 1fr); }
+}
+@media (prefers-reduced-motion: no-preference) { html { scroll-behavior: smooth; } }
+</style>
+
+<div class="wrap" id="app"></div>
+
+<div id="lightbox" hidden role="dialog" aria-modal="true" aria-label="Screenshot">
+  <div class="lb-top"><span class="cap"><span id="lb-cap"></span><span class="count" id="lb-count"></span></span><button type="button" id="lb-close">Close</button></div>
+  <div class="stage" id="lb-stage"><img id="lb-img" alt=""></div>
+  <div class="lb-bottom"><button type="button" id="lb-prev">Previous</button><span class="keys">Esc to close · arrow keys to move</span><button type="button" id="lb-next">Next</button></div>
+</div>
+
+<script type="application/json" id="storyboard-data">__DATA__</script>
+<script>
+(() => {
+  const D = JSON.parse(document.getElementById('storyboard-data').textContent);
+  const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  // Light inline markup for data strings: ${...} and `...` read as code, **...** as bold, and the
+  // tour notes' own <b> and <code> tags, so a note reads the same here and in the video.
+  const fmt = (s) => esc(s)
+    .replace(/&lt;(\/?)(b|code)&gt;/g, '<$1$2>')
+    .replace(/`([^`]+)`/g, '<code>$1</code>')
+    .replace(/(\$\{[a-z]+:[^}]*\})/gi, '<code>$1</code>')
+    .replace(/\b((?:variables|secrets):)/g, '<code>$1</code>')
+    .replace(/\*\*([^*]+)\*\*/g, '<b>$1</b>');
+  const mmss = (sec) => `${Math.floor(sec / 60)}:${String(Math.round(sec % 60)).padStart(2, '0')}`;
+  const KIND = { ui: 'Screen', code: 'Code', nav: 'Folders', title: 'Title', diagram: 'Diagram', terminal: 'Terminal' };
+
+  const scenesOf = (part) => part.chapters.flatMap((c) => c.scenes);
+  const total = D.parts.reduce((t, p) => t + scenesOf(p).reduce((a, s) => a + s.seconds, 0), 0);
+  const count = D.parts.reduce((t, p) => t + scenesOf(p).length, 0);
+  const planned = D.parts.reduce((t, p) => t + scenesOf(p).filter((s) => s.status === 'planned').length, 0);
+  const m = D.meta;
+  const firstId = D.parts[0]?.chapters[0]?.scenes[0]?.id ?? 'A1-01';
+  const approved = /approved/i.test(m.status);
+
+  const sketch = (s) => {
+    const side = s.sketch === 'editor' ? '' : `<div class="side"><i></i><i class="hi"></i><i></i><i></i></div>`;
+    const why = s.status === 'after-write' ? 'Captured while recording' : 'Not captured yet';
+    return `<div class="sketch"><div class="box"><i></i>${side}</div><div class="label">${why} · ${esc(s.sketch || 'screen')}</div></div>`;
+  };
+
+  // Diagram scenes: the sequence drawn small, this scene's steps lit, later steps faint.
+  const diagram = (s) => {
+    const d = (D.diagrams || {})[s.diagram?.use];
+    if (!d) return `<div class="card title"><div><div class="t">${esc(s.title)}</div></div></div>`;
+    const [first, last = first] = s.diagram.steps || [1];
+    const actors = d.actors.map((a) => (typeof a === 'string' ? { name: a } : a));
+    const W = 640, H = 360, pad = 16, col = (W - 2 * pad) / actors.length, top = 64, bh = 30;
+    const X = Object.fromEntries(actors.map((a, i) => [a.name, pad + col * (i + 0.5)]));
+    const row = Math.min(38, (H - top - bh - 74) / Math.max(1, d.steps.length));
+    let out = actors.map((a) => `<line class="life" x1="${X[a.name]}" y1="${top + bh}" x2="${X[a.name]}" y2="${H - 8}"/>`
+      + `<g class="act"><rect x="${X[a.name] - Math.min(70, col / 2 - 8)}" y="${top}" width="${Math.min(140, col - 16)}" height="${bh}" rx="5"/>`
+      + `<text x="${X[a.name]}" y="${top + 20}" text-anchor="middle">${esc(a.name)}</text></g>`).join('');
+    d.steps.forEach((st, i) => {
+      const n = i + 1, y = top + bh + 28 + row * i, x1 = X[st.from], x2 = X[st.to];
+      const cls = n < first ? 'done' : n <= last ? 'now' : 'later';
+      if (x1 === undefined || x2 === undefined) return;
+      const dir = Math.sign(x2 - x1) || 1;
+      const shape = x1 === x2
+        ? `<path d="M ${x1} ${y - 6} h 34 v 14 h -30"/><polygon points="${x1 + 2},${y + 8} ${x1 + 10},${y + 4} ${x1 + 10},${y + 12}"/><text x="${x1 + 40}" y="${y + 4}">${n}. ${esc(st.label)}</text>`
+        : `<line x1="${x1}" y1="${y}" x2="${x2 - dir * 8}" y2="${y}"/><polygon points="${x2},${y} ${x2 - dir * 9},${y - 4} ${x2 - dir * 9},${y + 4}"/>`
+          + `<text x="${(x1 + x2) / 2}" y="${y - 6}" text-anchor="middle">${n}. ${esc(st.label)}</text>`;
+      out += `<g class="m ${cls}">${shape}</g>`;
+    });
+    return `<div class="card diagram"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Sequence diagram ${esc(s.diagram.use)}, steps ${first} to ${last}">${out}</svg></div>`;
+  };
+
+  // Code, folder and title scenes are drawn from data: file and method are enough to review them.
+  const card = (s) => {
+    if (s.kind === 'diagram') return diagram(s);
+    if (s.kind === 'terminal') {
+      const t = s.terminal || {};
+      let out = esc(t.output || '');
+      for (const mk of t.marks || []) out = out.split(esc(mk)).join(`<mark>${esc(mk)}</mark>`);
+      return `<div class="card term"><div class="bar"><span class="dots"><i></i><i></i><i></i></span><span class="tab">TERMINAL · ${esc(t.cwd || '~')}</span></div>
+        <div class="out"><span class="p">$ </span>${esc(t.cmd || '')}\n${out}</div></div>`;
+    }
+    const c = s.code || {};
+    const file = (c.file || '').split('/').pop();
+    if (s.kind === 'title') return `<div class="card title"><div><div class="t">${esc(s.title)}</div>${s.screen ? `<div class="s">${esc(s.screen)}</div>` : ''}</div></div>`;
+    if (s.kind === 'nav') {
+      const parts = (c.file || '').split('/');
+      const crumbs = parts.map((p, i) => i === parts.length - 1 ? `<b>${esc(p)}</b>` : esc(p)).join(' › ');
+      return `<div class="card"><div class="bar"><span class="dots"><i></i><i></i><i></i></span><span>EXPLORER</span></div>
+        <div class="main"><div class="repo">${esc(c.repo || '')}</div><div class="crumbs">${crumbs}</div></div></div>`;
+    }
+    return `<div class="card"><div class="bar"><span class="dots"><i></i><i></i><i></i></span><span class="tab">${esc(file)}</span></div>
+      <div class="main"><div class="repo">${esc(c.repo || '')}</div><div class="sym">${esc(c.symbol || file)}</div>
+      <div class="path">${esc(c.file || '')}</div>${c.lines ? `<span class="lines">lines ${esc(c.lines)}</span>` : ''}</div></div>`;
+  };
+
+  const picture = (s) => {
+    if (s.kind === 'ui') return s.shot
+      ? `<button class="zoom" type="button" data-shot="${esc(s.shot)}" data-cap="${esc(s.id)} · ${esc(s.title)}" aria-label="Open the screenshot of scene ${esc(s.id)} full size"><img src="${esc(s.shot)}" alt="Screen for scene ${esc(s.id)}: ${esc(s.title)}" loading="lazy"><span class="hint">Click to enlarge</span></button>`
+      : sketch(s);
+    return card(s);
+  };
+
+  const frame = (s) => `
+    <article class="frame${s.changed ? ' changed' : ''}" id="scene-${esc(s.id)}">
+      <div class="pic">
+        ${picture(s)}
+        <div class="slate"><span class="kind-${esc(s.kind)}">${esc(s.id)}</span><span>${esc(KIND[s.kind] || s.kind)}</span></div>
+        <div class="dur">${s.status === 'ready' ? '' : '≈ '}${mmss(s.seconds)}</div>
+      </div>
+      <div class="body">
+        ${s.heading ? `<div class="heading">${esc(s.heading)}</div>` : ''}
+        <h4>${fmt(s.title)}</h4>
+        <div class="vo"><div class="who">Narrator (V.O.)</div><p>${fmt(s.voice)}</p></div>
+        ${s.note ? `<div class="note"><b>On screen:</b> ${fmt(s.note)}</div>` : ''}
+        ${s.kind === 'ui' && s.screen ? `<div class="row"><span>Picture</span><div>${fmt(s.screen)}</div></div>` : ''}
+        ${s.action?.length ? `<div class="row"><span>Action</span><ul>${s.action.map((a) => `<li>${fmt(a)}</li>`).join('')}</ul></div>` : ''}
+        ${s.changed ? `<div class="flags"><span class="flag changed">Changed in this update</span></div>` : ''}
+        ${s.flags?.includes('writes') ? `<div class="flags"><span class="flag">Writes to ${esc(m.environment && m.environment !== 'none' ? m.environment : 'a shared system')}</span></div>` : ''}
+      </div>
+    </article>`;
+
+  let clock = 0;
+  const partHtml = (p) => {
+    const chapters = p.chapters.map((c) => {
+      const len = c.scenes.reduce((a, s) => a + s.seconds, 0);
+      const isPlanned = c.scenes.some((s) => s.status === 'planned');
+      const html = `
+        <div class="chapter" id="ch-${esc(c.id)}">
+          <div class="chapter-head">
+            <h3>${esc(c.id)} · ${fmt(c.title)}</h3>
+            <span class="tc">${mmss(clock)} to ${mmss(clock + len)} · ${c.scenes.length} scenes</span>
+            <span class="badge ${isPlanned ? 'planned' : 'ready'}">${isPlanned ? 'Screens not captured yet' : approved ? 'Approved' : 'Ready for review'}</span>
+          </div>
+          <div class="frames">${c.scenes.map(frame).join('')}</div>
+        </div>`;
+      clock += len;
+      return html;
+    }).join('');
+    return `<section id="part-${esc(p.id)}"><div class="part-head"><span class="tag">PART ${esc(p.id)}</span><h2>${fmt(p.title)}</h2><span class="muted">${fmt(p.subtitle)}</span></div>${chapters}</section>`;
+  };
+
+  const chaptersFlat = D.parts.flatMap((p) => p.chapters.map((c) => ({ part: p.id, ...c })));
+  const rundown = chaptersFlat.map((c) => {
+    const len = c.scenes.reduce((a, s) => a + s.seconds, 0);
+    const pl = c.scenes.some((s) => s.status === 'planned') ? ' planned' : '';
+    return `<a class="${esc(c.part)}${pl}" href="#ch-${esc(c.id)}" style="flex:${len}" title="${esc(c.id)} ${esc(c.title)} (${mmss(len)})">${esc(c.id)}</a>`;
+  }).join('');
+  const legend = chaptersFlat.map((c) => `<span><b>${esc(c.id)}</b> ${fmt(c.title)} · ${mmss(c.scenes.reduce((a, s) => a + s.seconds, 0))}</span>`).join('');
+
+  const O = D.overview;
+  document.getElementById('app').innerHTML = `
+    <header class="top">
+      <div>
+        <div class="eyebrow">KT storyboard · Round ${esc(m.round)}</div>
+        <h1>${esc(m.feature)}</h1>
+        <p class="tldr">${fmt(O.tldr)}</p>
+        <div class="chips">
+          <span class="chip status${approved ? ' approved' : ''}"><b>${esc(m.status)}</b></span>
+          <span class="chip">About <b>${mmss(total)}</b> of voice</span>
+          <span class="chip"><b>${count}</b> scenes${planned ? ` · ${planned} planned` : ''}</span>
+          <span class="chip">${esc(m.format)}</span>
+          <span class="chip">Voice: ${esc(m.voice)}</span>
+          <span class="chip">${esc(m.date)}</span>
+        </div>
+      </div>
+      <aside class="howto">
+        <h2>How to review</h2>
+        ${m.review === 'local' ? `<ol>
+          <li>Read the overview, then each scene. Every scene has a number such as <b>${esc(firstId)}</b>.</li>
+          <li>Write your changes in the chat with Claude, one per line, starting with the scene number: <b>${esc(firstId)}: say it shorter</b>.</li>
+          <li>Claude rebuilds this page after each round. Reload it to see the new version (the round number is in the title).</li>
+          <li>When everything is right, say <b>approved</b> in the chat. Recording starts only after that.</li>
+        </ol>` : `<ol>
+          <li>Read the overview, then each scene. Every scene has a number such as <b>${esc(firstId)}</b>.</li>
+          <li>Select any text and add a comment. Start it with the scene number when it is about the whole scene.</li>
+          <li>Click <b>Send to Claude</b> on the thread (or write @claude) so Claude can change it and reply.</li>
+          <li>When everything is right, comment <b>@claude approved</b> on the title, or say so in the chat. Recording starts only after that.</li>
+        </ol>`}
+      </aside>
+    </header>
+
+    <nav class="jump" aria-label="Sections">
+      <a href="#overview">Overview</a>
+      ${D.parts.map((p) => `<a href="#part-${esc(p.id)}">Part ${esc(p.id)} · ${esc(p.title)}</a>`).join('')}
+      <a href="#review">Review</a>
+    </nav>
+
+    <section id="overview">
+      <h2>Overview</h2>
+      <p class="lead muted">${fmt(D.brief.request)}</p>
+      <div class="ov">
+        <div class="block span-7"><h3>What the feature does</h3>${O.what.map((t) => `<p>${fmt(t)}</p>`).join('')}</div>
+        <div class="block span-5"><h3>What this video explains</h3><ol class="steps">${O.explain.map((e) => `<li><div><b>${fmt(e.title)}</b><span class="muted">${fmt(e.detail)}</span></div></li>`).join('')}</ol></div>
+        <div class="block span-12"><h3>Repositories in the video</h3><div class="repos">${O.repos.map((r) => `
+          <div class="repo"><div class="label">${esc(r.label)}</div><div class="name">${esc(r.name)}</div><p class="muted" style="margin:8px 0 0">${fmt(r.role)}</p>
+          <ul>${r.files.map((f) => `<li>${esc(f)}</li>`).join('')}</ul><div class="sha">${esc(r.ref || '')} @ ${esc(r.sha)}</div></div>`).join('')}</div></div>
+        <div class="block span-12"><h3>Running order</h3><div class="rundown">${rundown}</div><div class="rundown-legend">${legend}</div></div>
+        <div class="block span-4"><h3>How I read your brief</h3><ul class="plain">${D.brief.readAs.map((t) => `<li>${fmt(t)}</li>`).join('')}</ul></div>
+        <div class="block span-4"><h3>Set and data</h3><dl class="kv">${O.set.map((x) => `<dt>${esc(x.k)}</dt><dd>${fmt(x.v)}</dd>`).join('')}</dl></div>
+        <div class="block span-4"><h3>Not in this video</h3><ul class="plain">${O.notCovered.map((t) => `<li>${fmt(t)}</li>`).join('')}</ul></div>
+        ${O.writes.length
+          ? `<div class="block span-6 writes"><h3>Writes to shared systems</h3><ul class="plain">${O.writes.map((t) => `<li>${fmt(t)}</li>`).join('')}</ul></div>`
+          : `<div class="block span-6 writes none"><h3>Writes to shared systems</h3><p>None. The recording only reads.</p></div>`}
+        <div class="block span-6"><h3>Questions for you</h3><ol class="plain">${O.questions.map((t) => `<li>${fmt(t)}</li>`).join('')}</ol></div>
+      </div>
+    </section>
+
+    ${D.parts.map(partHtml).join('')}
+
+    <section id="review">
+      <h2>Review</h2>
+      <div class="review">
+        <div class="block"><h3>Before you approve</h3><ul class="check">${D.review.map((t) => `<li>${fmt(t)}</li>`).join('')}</ul></div>
+        <div class="block"><h3>Production notes</h3>
+          <ul class="plain">${D.production.pace.map((t) => `<li>${fmt(t)}</li>`).join('')}</ul>
+          <p style="margin:14px 0 6px"><b>Spoken as</b></p>
+          <table class="pron"><tbody>${D.production.pronounce.map(([w, s]) => `<tr><td>${esc(w)}</td><td class="muted">${esc(s)}</td></tr>`).join('')}</tbody></table>
+          <p style="margin:14px 0 6px"><b>You get</b></p>
+          <ul class="plain">${D.production.deliver.map((t) => `<li>${fmt(t)}</li>`).join('')}</ul>
+        </div>
+      </div>
+    </section>
+
+    <footer>kt-studio storyboard template v1.1 · ${(m.sources || []).map((s) => `${esc(s.repo)} ${esc(s.ref)} @ ${esc(s.sha)}`).join(' · ')}${m.shotsFrom ? ` · screens captured on ${esc(m.shotsFrom)}` : ''}</footer>`;
+
+  // Full-size screenshots: click any UI picture; arrows move through every screenshot in order.
+  const box = document.getElementById('lightbox');
+  const shots = [...document.querySelectorAll('.zoom')];
+  let at = 0;
+  let opener = null;
+  const show = (i) => {
+    at = (i + shots.length) % shots.length;
+    const b = shots[at];
+    document.getElementById('lb-img').src = b.dataset.shot;
+    document.getElementById('lb-img').alt = b.dataset.cap;
+    document.getElementById('lb-cap').textContent = b.dataset.cap;
+    document.getElementById('lb-count').textContent = `${at + 1} / ${shots.length}`;
+  };
+  const open = (i) => {
+    opener = shots[i];
+    show(i);
+    box.hidden = false;
+    document.documentElement.style.overflow = 'hidden';
+    document.getElementById('lb-close').focus();
+  };
+  const close = () => {
+    box.hidden = true;
+    document.documentElement.style.overflow = '';
+    opener?.focus();
+  };
+  shots.forEach((b, i) => b.addEventListener('click', () => open(i)));
+  document.getElementById('lb-close').addEventListener('click', close);
+  document.getElementById('lb-prev').addEventListener('click', () => show(at - 1));
+  document.getElementById('lb-next').addEventListener('click', () => show(at + 1));
+  document.getElementById('lb-stage').addEventListener('click', (e) => { if (e.target.id === 'lb-stage') close(); });
+  document.addEventListener('keydown', (e) => {
+    if (box.hidden) return;
+    if (e.key === 'Escape') close();
+    if (e.key === 'ArrowLeft') show(at - 1);
+    if (e.key === 'ArrowRight') show(at + 1);
+  });
+})();
+</script>

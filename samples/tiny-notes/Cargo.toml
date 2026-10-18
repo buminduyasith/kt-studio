@@ -1,0 +1,11 @@
+[package]
+name = "tiny-notes"
+version = "0.1.0"
+edition = "2021"
+description = "A tiny command-line notes tool (standard library only)"
+
+[[bin]]
+name = "notes"
+path = "src/main.rs"
+
+[dependencies]

@@ -1,0 +1,86 @@
+asyncapi: 3.0.0
+info:
+  title: Shop checkout events
+  version: 1.3.0
+  description: |
+    Kafka events between order-service and payment-gateway. Every message uses the envelope
+    {eventId, type, occurredAt, payload} and is keyed by orderId, so one order's events share a
+    partition. Delivery is at-least-once: consumers must dedupe on eventId.
+
+channels:
+  ordersEvents:
+    address: orders.events
+    description: Producer order-service, consumer payment-gateway.
+    messages:
+      OrderPlaced: { $ref: '#/components/messages/OrderPlaced' }
+      OrderCancelled: { $ref: '#/components/messages/OrderCancelled' }
+  paymentsEvents:
+    address: payments.events
+    description: Producer payment-gateway, consumer order-service.
+    messages:
+      PaymentSucceeded: { $ref: '#/components/messages/PaymentSucceeded' }
+      PaymentFailed: { $ref: '#/components/messages/PaymentFailed' }
+
+components:
+  messages:
+    OrderPlaced:
+      summary: Open a payment intent. expiresAt = createdAt + 15 minutes.
+      payload:
+        allOf:
+          - $ref: '#/components/schemas/Envelope'
+          - properties:
+              payload:
+                required: [orderId, customerId, amountCents, currency, expiresAt]
+                properties:
+                  orderId: { type: string, format: uuid }
+                  customerId: { type: string }
+                  amountCents: { type: integer, minimum: 1 }
+                  currency: { type: string, enum: [EUR, USD, GBP] }
+                  expiresAt: { type: string, format: date-time }
+    OrderCancelled:
+      summary: Cancel the open payment intent and stop expecting payment.
+      payload:
+        allOf:
+          - $ref: '#/components/schemas/Envelope'
+          - properties:
+              payload:
+                required: [orderId, reason]
+                properties:
+                  orderId: { type: string, format: uuid }
+                  reason: { type: string, enum: [PAYMENT_FAILED, PAYMENT_TIMEOUT] }
+    PaymentSucceeded:
+      summary: eventId is the PSP webhook event id (evt_...), stable across redeliveries.
+      payload:
+        allOf:
+          - $ref: '#/components/schemas/Envelope'
+          - properties:
+              payload:
+                required: [orderId, paymentId, amountCents, currency]
+                properties:
+                  orderId: { type: string, format: uuid }
+                  paymentId: { type: string, example: pi_3Pq9 }
+                  amountCents: { type: integer }
+                  currency: { type: string }
+    PaymentFailed:
+      summary: Hard declines only (stolen_card, fraudulent, ...). Soft declines let the customer retry.
+      payload:
+        allOf:
+          - $ref: '#/components/schemas/Envelope'
+          - properties:
+              payload:
+                required: [orderId, paymentId, failureCode]
+                properties:
+                  orderId: { type: string, format: uuid }
+                  paymentId: { type: string }
+                  failureCode: { type: string, example: stolen_card }
+                  failureMessage: { type: string }
+
+  schemas:
+    Envelope:
+      type: object
+      required: [eventId, type, occurredAt, payload]
+      properties:
+        eventId: { type: string }
+        type: { type: string, enum: [OrderPlaced, OrderCancelled, PaymentSucceeded, PaymentFailed] }
+        occurredAt: { type: string, format: date-time }
+        payload: { type: object }

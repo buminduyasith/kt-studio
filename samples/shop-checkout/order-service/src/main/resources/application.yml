@@ -1,0 +1,33 @@
+spring:
+  application:
+    name: order-service
+  datasource:
+    url: ${ORDERS_DB_URL:jdbc:postgresql://localhost:5432/orders}
+    username: ${ORDERS_DB_USER:orders}
+    password: ${ORDERS_DB_PASSWORD:orders}
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate   # tables are migrated by the shop-db repo (Liquibase)
+  kafka:
+    bootstrap-servers: ${KAFKA_BROKERS:localhost:9092}
+    consumer:
+      group-id: order-service
+      auto-offset-reset: earliest
+    producer:
+      acks: all
+      properties:
+        enable.idempotence: true
+
+server:
+  port: 8081
+
+checkout:
+  topics:
+    orders: orders.events       # we publish OrderPlaced / OrderCancelled
+    payments: payments.events   # we consume PaymentSucceeded / PaymentFailed (literal in PaymentEventsListener)
+  reservation:
+    payment-timeout: 15m        # unpaid orders are cancelled and stock released after this
+    sweep-interval-ms: 60000    # how often ReservationExpiryJob runs
+  inventory:
+    base-url: ${INVENTORY_URL:http://inventory-service:8080}

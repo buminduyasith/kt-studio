@@ -1,0 +1,14 @@
+{
+  "name": "kt-studio",
+  "displayName": "KT Studio",
+  "version": "0.1.0",
+  "description": "Turn a finished feature into a narrated knowledge-transfer video: research the code, review a storyboard, then record real screens and a VS Code style code tour with an offline voice, subtitles and chapters.",
+  "author": {
+    "name": "Bumindu Yasith",
+    "url": "https://github.com/buminduyasith"
+  },
+  "homepage": "https://github.com/buminduyasith/kt-studio",
+  "repository": "https://github.com/buminduyasith/kt-studio",
+  "license": "MIT",
+  "keywords": ["knowledge-transfer", "kt", "video", "onboarding", "handover", "code-tour", "storyboard", "playwright", "tts"]
+}

@@ -1,0 +1,24 @@
+# .kt-studio/config.yml for tiny-notes. No passwords, tokens or keys in this file; it is meant to be committed.
+project: tiny-notes                   # shown on storyboards and title screens
+
+metadata: {}
+
+repos:                                # code the tour is allowed to show, read from git at each ref
+  - key: tiny-notes
+    path: .                           # this folder, inside the bigger git repo one level up
+    label: Tiny Notes
+    ref: HEAD                         # the whole folder, at the checked-out commit
+
+knowledge:                            # where to look first when researching a feature
+  - README.md
+
+voice:
+  engine: kokoro
+  name: bf_emma                       # UK female
+  speed: 0.9
+  word_timing: estimate
+  pronounce: {}
+
+review: local                         # open storyboard.html locally and comment in the chat (no artifact)
+
+language: simple English

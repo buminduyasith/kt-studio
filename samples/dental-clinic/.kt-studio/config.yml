@@ -1,0 +1,30 @@
+# .kt-studio/config.yml: settings for /kt-studio in this project. No passwords, tokens or keys here.
+
+project: Smile Dental
+
+metadata: {}
+
+repos:
+  - key: frontend
+    path: ./frontend
+    label: Frontend
+    ref: HEAD
+  - key: backend
+    path: ./backend
+    label: Backend
+    ref: HEAD
+
+knowledge:
+  - README.md
+  - docs/
+
+voice:
+  engine: kokoro
+  name: af_heart
+  speed: 0.9
+  word_timing: estimate
+  pronounce: {}
+
+review: local                         # no artifact: open storyboard.html and comment in the chat
+
+language: simple English

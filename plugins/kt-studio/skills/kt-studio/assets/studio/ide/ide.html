@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Code tour</title>
+<link rel="stylesheet" href="ide.css">
+</head>
+<body>
+<div id="app">
+  <header id="titlebar">
+    <div class="lights"><i></i><i></i><i></i></div>
+    <div id="title">Workspace</div>
+  </header>
+  <nav id="activity">
+    <div class="act on" title="Explorer"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg></div>
+    <div class="act" title="Search"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg></div>
+    <div class="act" title="Source control"><svg viewBox="0 0 24 24"><circle cx="6" cy="5" r="2"/><circle cx="6" cy="19" r="2"/><circle cx="18" cy="8" r="2"/><path d="M6 7v10M18 10c0 5-12 2-12 7"/></svg></div>
+    <div class="act" title="Extensions"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="8" height="8"/><rect x="13" y="13" width="8" height="8"/><rect x="3" y="13" width="8" height="8"/><path d="m15 3 6 6-6 6"/></svg></div>
+  </nav>
+  <aside id="sidebar">
+    <div class="side-head">EXPLORER</div>
+    <div class="section-head"><svg class="chev open" viewBox="0 0 16 16"><path d="m6 4 4 4-4 4"/></svg><span id="ws-name"></span></div>
+    <div id="tree"></div>
+  </aside>
+  <main id="editor">
+    <div id="tabs"></div>
+    <div id="crumbbar">
+      <div id="crumbs"></div>
+      <div id="flow"></div>
+    </div>
+    <div id="code-wrap">
+      <div id="welcome">
+        <div class="logo"><svg viewBox="0 0 100 100"><path d="M72 8 38 41 17 25 8 30v40l9 5 21-16 34 33 20-9V17z" fill="none" stroke-width="5"/></svg></div>
+        <div class="wtitle" id="welcome-title"></div>
+        <div class="wsub" id="welcome-sub"></div>
+      </div>
+      <div id="code"></div>
+      <div id="seq"></div>
+    </div>
+    <section id="terminal" aria-label="Terminal">
+      <div class="term-tabs"><span>PROBLEMS</span><span>OUTPUT</span><span class="on">TERMINAL</span><span id="term-cwd"></span></div>
+      <div id="term-body"></div>
+    </section>
+  </main>
+  <footer id="status">
+    <div class="sl"><span id="st-branch"></span><span id="st-sha"></span></div>
+    <div class="sr"><span id="st-pos"></span><span>Spaces: 2</span><span>UTF-8</span><span id="st-lang"></span></div>
+  </footer>
+  <div id="palette" hidden>
+    <input id="palette-input" placeholder="Search files by name" autocomplete="off" spellcheck="false">
+    <div id="palette-list"></div>
+  </div>
+</div>
+<script src="data.js"></script>
+<script src="ide.js"></script>
+</body>
+</html>

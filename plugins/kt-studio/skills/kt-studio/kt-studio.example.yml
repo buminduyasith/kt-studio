@@ -1,0 +1,39 @@
+# .kt-studio/config.yml: KT Studio's settings for this project. /kt-studio:init writes it for you.
+# Never put a password, token or API key in this file. It is meant to be committed.
+# Paths are relative to the project root (the folder that holds .kt-studio/).
+# Where your apps run is not set here: list your services and their addresses (one column per
+# environment) in .kt-studio/instructions.md, or say it when you ask for a video ("on QA").
+
+project: Acme Shop                    # shown on storyboards and title screens
+metadata: {}                          # optional, free-form: anything your project needs; the skill reads it, your instructions say how to use it
+
+repos:                                # code the tour is allowed to show, read from git at each ref (run git fetch first)
+  - key: web
+    path: ./web                       # relative to the project root
+    label: Frontend
+    ref: origin/main                  # the default branch; a request can name another ("from the release-2 branch")
+  - key: api
+    path: ./api
+    label: Backend
+    ref: origin/develop
+
+knowledge:                            # where to look first when researching a feature
+  - docs/index.md
+  - docs/features/
+
+voice:
+  engine: kokoro                      # offline, free; the text never leaves your machine
+  name: af_heart                      # US female. Others: am_michael, bf_emma, ...
+  speed: 0.9
+  word_timing: estimate               # estimate (default, instant) or whisper (closer, offline, ~150 MB once)
+  pronounce:                          # how the voice should say product words
+    AcmePay: Acme Pay
+
+review: artifact                      # artifact (comment on a Claude artifact) or local (open the HTML file, comment in the chat)
+
+# defaults:                           # optional: the answer a video recommends when nothing else says (each feature keeps its own answers)
+#   audience: qa                      # developer, qa, product or support
+#   show: screens-and-code            # screens-and-code, screens or code
+#   depth: standard                   # overview, standard or deep-dive
+
+language: simple English              # narration and storyboard style (the offline voice speaks English)

@@ -1,0 +1,17 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "kt-studio",
+  "description": "KT Studio: narrated knowledge-transfer videos made from your code and your running app.",
+  "owner": {
+    "name": "Bumindu Yasith",
+    "url": "https://github.com/buminduyasith"
+  },
+  "plugins": [
+    {
+      "name": "kt-studio",
+      "description": "Turn a finished feature into a narrated KT video: storyboard review first, then real screens and a code tour.",
+      "source": "./plugins/kt-studio",
+      "category": "productivity"
+    }
+  ]
+}

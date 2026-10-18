@@ -1,0 +1,6 @@
+node_modules/
+.auth/
+.argo/
+videos/
+test-results/
+.playwright-cli/

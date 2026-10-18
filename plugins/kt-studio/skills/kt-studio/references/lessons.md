@@ -1,0 +1,67 @@
+# Lessons from building kt-studio
+
+Each row is a real problem from the first runs, its cause, and the fix now built into the skill.
+
+| Problem | Cause | Fix |
+|---|---|---|
+| A slideshow of screenshots felt thin and missed the "how to" | Static slides cannot show clicks, typing or order | Record the real UI with a scripted cursor; slides only for title cards |
+| Recording showed the login page | Argo writes its own Playwright config and ignores `playwright.config.ts` | Pass the saved session through `video.contextOptions.storageState` (`KT_STATE`) |
+| A 30 s test timeout killed long demos | Same reason | `test.setTimeout()` inside the test |
+| A take hung for 10 minutes | A click waited forever for a hidden element | `page.setDefaultTimeout(45_000)` in every script |
+| Rehearsal timing was wrong | `argo record` alone uses 5 s per scene | Real takes always use `argo pipeline` |
+| A stray tint over code in the app's editor | Many editors tint the block that holds the caret or the hovered item | Park the caret on line 1, blur, start the cursor away from interactive areas |
+| "Unsaved changes" popup blocked a rehearsal | Leaving a page without saving | Handle the app's leave dialog in dry runs |
+| A second take failed on "name already exists" | The first take had created it | Unique names per take (`KT_NAME`) |
+| The tour page would not load | Browsers block `file://` pages | Serve the tour folder on 127.0.0.1 (`scripts/serve.sh`) |
+| Voice and picture drifted apart at scene starts | Navigation happened after the voice started | Navigate before the line (`sync.say()` / `narration.mark()`) |
+| The explorer was unreadable | Real folders hold 150+ files | Show folders and tour files only, fold the rest into `+ N more files` |
+| A note was off screen | Two highlights 40 lines apart | One range per scene, or split the scene |
+| The mouse covered the note | It stayed where it clicked | `cursor.hide()` after a jump |
+| The video blinked at every new scene | Fade-through-black transition, plus a fade on file open | No transitions; instant file swap; `check_video.py` catches it |
+| Too fast to follow | Speed ramp on navigation, voice at 1.0, short pauses | Pace table in `quality.md` |
+| Long silences after slowing down | Unnarrated folder walks and jumps | Narrated `walk()` scenes; voice starts with the jump |
+| Product names were mispronounced | TTS does not know them | `voice.pronounce` map, applied only to the spoken text |
+| Captions vanished during a zoom | The zoom crops the frame after captions are drawn | Keep captions away from the edges when a scene zooms |
+| `npm audit` warnings in the voice engine | Old `sharp` and `global-agent` deep in the dependency tree | Pinned versions with npm `overrides`; the voice output stayed byte-identical |
+| A login check said "valid" with no session, or saved an empty session | Single-page apps show their own URL (for example `/dashboard`) for several seconds before the login redirect, and a valid session passes through the login host for a moment | Decide on streaks of the same answer, never one sample (`login.sh` does). A saved session must hold the identity provider's session cookie |
+| Voice and picture drifted apart inside a scene ("sometimes not in sync") | Actions ran at the script's pace, not the voice's: clicks landed 0.2 to 2.9 s after their words (median 1.7 s, measured) | `lib/sync.ts`: each action waits for its word; `check_sync.py` fails a cue that misses by more than 0.4 s |
+| Clicks still landed about 1 s late on cue | Argo's cursor sleeps per path step and each step also costs a browser round trip: a 700 ms move took 1.4 s | The sync pointer measures the cost on every move and asks for a shorter duration |
+| Suspected the recorder for the drift | A corner probe at every mark showed the picture within 0.07 s of the mark, no drift | Leave the audio placement alone; fix timing in the script |
+| Captions came early and sat on screen for a whole scene | Argo writes one cue per scene, from the clip start (0.34 s of silence) to its end | `tools/captions.mjs`: phrase cues from the word timings, with the on-screen spelling (`caption`) |
+| 4 to 5 s of dead air between code tour lines | Quick open took 2.7 s after the pause, and the pause was really 2.1 s (clip tail plus Argo's lead-in) | Faster quick open, `quickOpenOn()` on the file's spoken name, `s.end()` measures the pause from the last sound |
+| Voice files drifted from the storyboard | Scenes files were copied by hand | `scripts/make_scenes.py` writes them from the approved storyboard |
+| `stage.sh` did not build the tour | Relative paths were resolved against the runtime | `stage.sh` and `build_tour.mjs` resolve paths themselves (repo paths relative to `tour.json`) |
+| A joined video had Part B's voice 35 ms early | Argo's audio track starts 35 ms after its picture; trimming by duration without timestamps dropped those 35 ms, and every later part slid early | `finish.py` resamples with `async=1:first_pts=0` before any trim; measured 0 ms shift after the join |
+| The blink check failed a good joined video | It compared every frame with one median: the dark code part looked like 800 dark frames next to the bright UI | `check_video.py` compares with the 20 s around each frame, and judges jumps against the brighter frame; still catches a 0.4 s dip to black and a white flash |
+| Picking from a native dropdown looked like magic | The `<select>` popup is drawn outside the page and never appears in a recording | `s.choose(select, option, word)` draws a look-alike list and glides to the option |
+| The page jumped when the cursor went to a button below the fold | Argo's cursor scrolls with `scrollIntoViewIfNeeded`: an instant cut | The sync pointer smooth-scrolls the target into view first |
+| A closing title card sat on top of the code | The title layer has no background and the code stayed visible | `welcome()` fades the code out first |
+| `getByLabel('Doctor')` also matched the Time list | A `<label>` that wraps a `<select>` takes the options' text into its name ("Choose a doctor first") | Use the field's id or an exact name for lists; check locators in the screenshot pass |
+| Check-in did nothing during a take | The app asks with `confirm()`; Playwright dismisses dialogs nobody answers, and the dialog never shows on video anyway | `createSync()` answers every dialog; `s.confirm(button, word, okWord)` shows the question as a look-alike and clicks OK |
+| A click cued on "Book" fired at "let's book Kamal" | The same word twice in one line | Cue `{ word: 'Book', nth: 2 }`, or a two-word phrase ("Cancel appointment") |
+| A time list flashed open and shut while the voice explained it | `choose()` picked at once | `s.choose(list, '15:30', 'time list', { pickOn: 'half' })` keeps it open until the pick word |
+| Three cues missed by about 1 s in one scene | The line packed three list picks and a click into 5 s, and said "type the reason" without the reason | `check_sync.py` caught it; the storyboard line was rewritten to say the typed value while it is typed, one sentence per action |
+| The blink check failed when a dialog opened | A modal backdrop darkens the page at once and stays | Changes that stay are judged against 50%, changes that come back within 1.5 s against 25% |
+| `git show $REF:clinic/...` failed in zsh | zsh reads `:c` after a variable as a modifier | Always `"${REF}:${FILE}"` |
+| A click waited for the wrong moment in one line | The voice did not pause at a comma, so the word estimate matched that comma to the sentence pause and squeezed every later phrase (16 words stamped at one instant across the labs) | Sentence ends take the longest pauses first; commas only a nearby pause; worst error 2.2 s to 0.7 s, none squeezed |
+| The idle cursor sat on top of the code | Walks and jumps left it where it stopped | Hide it after creating it; walks and jumps hide it again when they finish |
+| Every lab login was improvised | No tool for logins; one automatic local login could not cover SSO, 2FA or magic links | The person always logs in in a window `login.sh open` shows; `login.sh probe` asks only when a page needs it; the session lives for the run only (`login.sh forget`) |
+| A late cue only showed up after the real take | Argo prints the script's warnings only when a take fails | `check_sync.py <rt>/.argo/<run-id>-ui` reads a rehearsal's own cue log |
+| Takes were lost to expired logins and unreachable environments | Nothing checked them before minutes of recording | `preflight.sh` checks tools, runtime, sessions, reachability, refs, disk and the tour port in seconds |
+| Whisper heard "and" as "in" | Speech-to-text is not the script | Whisper times are laid onto the script's own words; cues match the script, never the transcript |
+| The picture slid 2 to 5 s behind the voice and every check passed | Argo stamps each frame when it arrives; on a busy computer (two takes at once) frames queue. `check_sync.py` reads the script's own log, which was on time | `check_video.py --marks` measures where the picture changes against the marks; preflight warns on a busy CPU and refuses while another project records |
+| A deep Java folder walk ran 1.3 s late | Every unnamed folder (main, java, com, shop) got its own scroll and click | `walkOn` opens a run of folders the line does not name in one step, like VS Code's compact folders |
+| A patch take's video started after its own join point | Argo cuts everything before the first mark (less 0.2 s) when that is over 0.5 s; in a patch take the first mark came after the fast part's navigation | A silent `kt-patch-in` mark at the join; `patch.py` converts the recording's clock to the video's |
+| Splicing was killed by the system | Two pieces of one ffmpeg input made ffmpeg hold every frame between them in memory | One input per piece, as `finish.py` does |
+| A failed splice left an empty version folder | The old version was archived before the encode | Archive only after the encode succeeds |
+| A 46-scene contact sheet could not be read | One image, 16 rows | Sheets of 12 frames, each labelled with its scene id |
+| Agents mixed up a dozen commands and paths per take | Every step was a separate command | `take.sh rehearse|record <out> <run> <part> [--patch first last]` |
+| Fresh-install test: `login.sh wait` said "logged in" at once and saved an empty session | The app kept its "Log out" button in the page (in a section its own CSS still showed) while it showed the login form, and the signed-in check looked only for that text | A visible password field now always means "not signed in", whatever text is on the page, and `wait` rejects a saved session with no cookies and no stored data |
+| Settings loose in the project root were easy to delete by mistake | Two files in the root look like clutter | Everything lives in `.kt-studio/` (config.yml, instructions.md, the recorder, the videos); its `.gitignore` keeps only the settings and the answers in git |
+| Every video asked nothing, so a tester got a developer's video unless the request said "for testers"; one settings file could not hold what differs per feature | The audience, what to show and the depth came only from the words of the request | Two short rounds of questions with the best answer first (`choices.py`); each feature keeps its answers in `features/<feature>/feature.yml`, and `learned.yml` makes later videos ask less |
+| Projects have several services, each in some environments only; a flat list of addresses mixed service and environment in one name | One list cannot say "this service, in this environment" | `## Services` (what each is for) and `## Addresses` (one column per environment) in the instructions; the run picks the environment, then each service's address in it |
+| `login.sh forget` would have deleted a team's own saved sessions | The team linked `runtime/.auth` to its own sessions folder, and forget deleted every `*.json` there | KT Studio names its files `kt-*`, lists them in `.auth/.kt-made`, and deletes only those |
+| People typed `/kt-studio:kt-studio init` | Plugin skills always carry the plugin name | Separate skills: `/kt-studio:init`, `/kt-studio:update`, `/kt-studio:doctor`; videos with `/kt-studio:make <feature>` |
+| The code tour's file list showed `.kt-studio/` | The settings are committed inside the project, and the tour lists every file git has | `build_tour.mjs` leaves KT Studio's own files out of the tree unless the tour opens one |
+| A code highlight and its note were cut off at the bottom of the screen | A terminal scene left its panel open (half the height) and the next code scene's lines did not fit above it | The tour closes the terminal before a highlight that would not fit above it, and scrolls less from the top when space is tight |
+| A rehearsal cut off by the 10-minute command limit broke the next one | Its recorder kept running, and two recorders slipped | `take.sh` refuses to start while a recorder of the project runs; long parts are rehearsed in the background |

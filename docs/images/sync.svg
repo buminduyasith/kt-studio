@@ -1,0 +1,120 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1240 620" width="1240" height="620" role="img" aria-labelledby="title desc">
+  <title id="title">How each action lands on its word</title>
+  <desc id="desc">The voice line is made first. Word start times are worked out from it. The recording script names a cue word for each action, the cursor starts early by the time it really needs, and the click lands about 0.12 seconds after the word starts. A check fails any action more than 0.4 seconds late.</desc>
+  <defs>
+    <style>
+      :root {
+        --bg: #ffffff; --ink: #1f2328; --muted: #59636e; --line: #d1d9e0; --panel: #f6f8fa;
+        --voice: #0969da; --cue: #bc4c00; --cur: #8250df; --cur-f: #fbefff; --ok: #1a7f37; --ok-f: #dafbe1;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #0d1117; --ink: #e6edf3; --muted: #9198a1; --line: #3d444d; --panel: #151b23;
+          --voice: #4493f8; --cue: #f0883e; --cur: #ab7df8; --cur-f: #231a33; --ok: #3fb950; --ok-f: #0f2a19;
+        }
+      }
+      text { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; fill: var(--ink); }
+      .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+      .h1 { font-size: 28px; font-weight: 700; }
+      .sub { font-size: 15px; fill: var(--muted); }
+      .n { font-size: 13px; font-weight: 700; fill: #ffffff; }
+      .st { font-size: 15px; font-weight: 700; }
+      .sb { font-size: 13px; fill: var(--muted); }
+      .lane { font-size: 12px; font-weight: 700; letter-spacing: 1.2px; fill: var(--muted); }
+      .w { font-size: 14px; font-weight: 600; }
+      .cue { fill: var(--cue); font-weight: 800; }
+      .tl { font-size: 11.5px; fill: var(--muted); }
+      .cl { font-size: 12.5px; font-weight: 600; fill: var(--cur); }
+      .bg { fill: var(--bg); }
+      .lblbg { fill: var(--panel); }
+      .cuet { fill: var(--cue); font-weight: 700; }
+      .panel { fill: var(--panel); stroke: var(--line); stroke-width: 1; }
+      .wave { fill: var(--voice); opacity: .85; }
+      .tick { stroke: var(--muted); stroke-width: 1.2; }
+      .axis { stroke: var(--muted); stroke-width: 1.2; }
+      .guide { stroke: var(--cue); stroke-width: 1.5; stroke-dasharray: 5 4; }
+      .cur { fill: var(--cur-f); stroke: var(--cur); stroke-width: 1.5; }
+      .click { fill: var(--cur); }
+      .ring { fill: none; stroke: var(--cur); stroke-width: 1.5; opacity: .5; }
+      .okc { fill: var(--ok-f); stroke: var(--ok); stroke-width: 1.5; }
+      .okt { font-size: 12.5px; font-weight: 700; fill: var(--ok); }
+      .badge-v { fill: var(--voice); } .badge-c { fill: var(--cue); } .badge-p { fill: var(--cur); } .badge-k { fill: var(--ok); }
+    </style>
+  </defs>
+
+  <rect class="bg" x="0" y="0" width="1240" height="620" rx="16"/>
+  <text class="h1" x="37" y="54">How each action lands on its word</text>
+  <text class="sub" x="37" y="82">The voice is made before the recording, so the script knows when every word is spoken.</text>
+
+  <!-- steps -->
+  <circle class="badge-v" cx="52" cy="140" r="13"/><text class="n" x="52" y="145" text-anchor="middle">1</text>
+  <text class="st" x="76" y="145">Voice first</text>
+  <text class="sb" x="76" y="166">Kokoro speaks each line offline</text>
+  <text class="sb" x="76" y="184">before anything is recorded.</text>
+
+  <circle class="badge-c" cx="52" cy="226" r="13"/><text class="n" x="52" y="231" text-anchor="middle">2</text>
+  <text class="st" x="76" y="231">Word times</text>
+  <text class="sb" x="76" y="252">When each word starts, from the</text>
+  <text class="sb" x="76" y="270">pauses in the voice (or Whisper).</text>
+
+  <circle class="badge-c" cx="52" cy="312" r="13"/><text class="n" x="52" y="317" text-anchor="middle">3</text>
+  <text class="st" x="76" y="317">A cue word per action</text>
+  <text class="sb mono" x="76" y="339" font-size="12">s.choose(slot, '10:30', 'time')</text>
+  <text class="sb mono" x="76" y="357" font-size="12">s.click(book, 'Book')</text>
+
+  <circle class="badge-p" cx="52" cy="398" r="13"/><text class="n" x="52" y="403" text-anchor="middle">4</text>
+  <text class="st" x="76" y="403">The cursor starts early</text>
+  <text class="sb" x="76" y="424">It measures how fast it really</text>
+  <text class="sb" x="76" y="442">moves, so the click lands on time.</text>
+
+  <circle class="badge-k" cx="52" cy="484" r="13"/><text class="n" x="52" y="489" text-anchor="middle">5</text>
+  <text class="st" x="76" y="489">Checked after recording</text>
+  <text class="sb" x="76" y="510">check_sync fails any action more</text>
+  <text class="sb" x="76" y="528">than 0.4 s after its word.</text>
+
+  <!-- timeline panel -->
+  <rect class="panel" x="400" y="112" width="803" height="476" rx="14"/>
+  <text class="lane" x="418" y="210">VOICE</text>
+  <text class="lane" x="418" y="282">WORD</text>
+  <text class="lane" x="418" y="298">TIMES</text>
+  <text class="lane" x="418" y="380">CURSOR</text>
+  <text class="lane" x="418" y="470">CHECK</text>
+
+  <text class="tl" x="520.0" y="134">scene starts: sync.say() marks it at 0 s</text>
+  <line class="tick" x1="520.0" y1="140" x2="520.0" y2="508"/>
+
+  <line class="guide" x1="675.8" y1="174" x2="675.8" y2="490"/>
+  <line class="guide" x1="971.0" y1="174" x2="971.0" y2="490"/>
+  <text class="w" x="589.7" y="165">Pick</text>
+  <text class="w" x="655.3" y="165">a</text>
+  <text class="w cue" x="675.8" y="165">time,</text>
+  <text class="w" x="817.2" y="165">then</text>
+  <text class="w" x="872.6" y="165">click</text>
+  <text class="w cue" x="971.0" y="165">Book.</text>
+  <rect class="wave" x="589.7" y="202.2" width="3.2" height="5.6" rx="1.6"/><rect class="wave" x="594.6" y="199.0" width="3.2" height="11.9" rx="1.6"/><rect class="wave" x="599.5" y="194.0" width="3.2" height="21.9" rx="1.6"/><rect class="wave" x="604.5" y="196.0" width="3.2" height="18.1" rx="1.6"/><rect class="wave" x="609.4" y="191.3" width="3.2" height="27.4" rx="1.6"/><rect class="wave" x="614.3" y="191.8" width="3.2" height="26.4" rx="1.6"/><rect class="wave" x="619.2" y="194.1" width="3.2" height="21.9" rx="1.6"/><rect class="wave" x="624.1" y="190.4" width="3.2" height="29.3" rx="1.6"/><rect class="wave" x="629.1" y="194.8" width="3.2" height="20.4" rx="1.6"/><rect class="wave" x="634.0" y="192.7" width="3.2" height="24.6" rx="1.6"/><rect class="wave" x="638.9" y="196.7" width="3.2" height="16.7" rx="1.6"/><rect class="wave" x="643.8" y="198.2" width="3.2" height="13.5" rx="1.6"/><rect class="wave" x="648.7" y="199.4" width="3.2" height="11.1" rx="1.6"/><rect class="wave" x="655.3" y="201.3" width="3.2" height="7.4" rx="1.6"/><rect class="wave" x="660.2" y="194.7" width="3.2" height="20.5" rx="1.6"/><rect class="wave" x="665.1" y="193.0" width="3.2" height="24.0" rx="1.6"/><rect class="wave" x="670.1" y="196.2" width="3.2" height="17.6" rx="1.6"/><rect class="wave" x="675.8" y="201.1" width="3.2" height="7.8" rx="1.6"/><rect class="wave" x="680.7" y="197.9" width="3.2" height="14.1" rx="1.6"/><rect class="wave" x="685.6" y="196.6" width="3.2" height="16.9" rx="1.6"/><rect class="wave" x="690.6" y="191.3" width="3.2" height="27.4" rx="1.6"/><rect class="wave" x="695.5" y="196.1" width="3.2" height="17.9" rx="1.6"/><rect class="wave" x="700.4" y="189.0" width="3.2" height="32.0" rx="1.6"/><rect class="wave" x="705.3" y="192.7" width="3.2" height="24.6" rx="1.6"/><rect class="wave" x="710.2" y="193.5" width="3.2" height="23.1" rx="1.6"/><rect class="wave" x="715.2" y="193.5" width="3.2" height="22.9" rx="1.6"/><rect class="wave" x="720.1" y="192.0" width="3.2" height="26.0" rx="1.6"/><rect class="wave" x="725.0" y="188.2" width="3.2" height="33.6" rx="1.6"/><rect class="wave" x="729.9" y="194.0" width="3.2" height="21.9" rx="1.6"/><rect class="wave" x="734.8" y="192.0" width="3.2" height="26.1" rx="1.6"/><rect class="wave" x="739.8" y="193.0" width="3.2" height="24.0" rx="1.6"/><rect class="wave" x="744.7" y="196.3" width="3.2" height="17.5" rx="1.6"/><rect class="wave" x="749.6" y="197.4" width="3.2" height="15.2" rx="1.6"/><rect class="wave" x="754.5" y="201.6" width="3.2" height="6.7" rx="1.6"/><rect class="wave" x="817.2" y="202.7" width="3.2" height="4.6" rx="1.6"/><rect class="wave" x="822.2" y="198.3" width="3.2" height="13.4" rx="1.6"/><rect class="wave" x="827.1" y="192.9" width="3.2" height="24.1" rx="1.6"/><rect class="wave" x="832.0" y="192.6" width="3.2" height="24.8" rx="1.6"/><rect class="wave" x="836.9" y="192.3" width="3.2" height="25.3" rx="1.6"/><rect class="wave" x="841.9" y="189.6" width="3.2" height="30.9" rx="1.6"/><rect class="wave" x="846.8" y="190.9" width="3.2" height="28.2" rx="1.6"/><rect class="wave" x="851.7" y="193.0" width="3.2" height="23.9" rx="1.6"/><rect class="wave" x="856.6" y="191.1" width="3.2" height="27.7" rx="1.6"/><rect class="wave" x="861.5" y="194.5" width="3.2" height="20.9" rx="1.6"/><rect class="wave" x="866.5" y="200.0" width="3.2" height="9.9" rx="1.6"/><rect class="wave" x="872.6" y="201.8" width="3.2" height="6.5" rx="1.6"/><rect class="wave" x="877.5" y="197.7" width="3.2" height="14.6" rx="1.6"/><rect class="wave" x="882.4" y="193.2" width="3.2" height="23.5" rx="1.6"/><rect class="wave" x="887.4" y="191.9" width="3.2" height="26.2" rx="1.6"/><rect class="wave" x="892.3" y="193.6" width="3.2" height="22.8" rx="1.6"/><rect class="wave" x="897.2" y="187.1" width="3.2" height="35.8" rx="1.6"/><rect class="wave" x="902.1" y="193.7" width="3.2" height="22.7" rx="1.6"/><rect class="wave" x="907.0" y="191.0" width="3.2" height="28.0" rx="1.6"/><rect class="wave" x="912.0" y="188.4" width="3.2" height="33.2" rx="1.6"/><rect class="wave" x="916.9" y="194.0" width="3.2" height="22.0" rx="1.6"/><rect class="wave" x="921.8" y="192.4" width="3.2" height="25.1" rx="1.6"/><rect class="wave" x="926.7" y="196.9" width="3.2" height="16.3" rx="1.6"/><rect class="wave" x="931.6" y="195.0" width="3.2" height="20.0" rx="1.6"/><rect class="wave" x="936.6" y="197.5" width="3.2" height="14.9" rx="1.6"/><rect class="wave" x="971.0" y="201.8" width="3.2" height="6.5" rx="1.6"/><rect class="wave" x="975.9" y="197.0" width="3.2" height="16.0" rx="1.6"/><rect class="wave" x="980.8" y="197.2" width="3.2" height="15.5" rx="1.6"/><rect class="wave" x="985.8" y="193.4" width="3.2" height="23.1" rx="1.6"/><rect class="wave" x="990.7" y="192.6" width="3.2" height="24.8" rx="1.6"/><rect class="wave" x="995.6" y="191.5" width="3.2" height="27.0" rx="1.6"/><rect class="wave" x="1000.5" y="191.6" width="3.2" height="26.8" rx="1.6"/><rect class="wave" x="1005.4" y="187.8" width="3.2" height="34.3" rx="1.6"/><rect class="wave" x="1010.4" y="186.6" width="3.2" height="36.9" rx="1.6"/><rect class="wave" x="1015.3" y="190.5" width="3.2" height="29.0" rx="1.6"/><rect class="wave" x="1020.2" y="189.1" width="3.2" height="31.8" rx="1.6"/><rect class="wave" x="1025.1" y="194.5" width="3.2" height="20.9" rx="1.6"/><rect class="wave" x="1030.0" y="190.1" width="3.2" height="29.8" rx="1.6"/><rect class="wave" x="1035.0" y="191.6" width="3.2" height="26.8" rx="1.6"/><rect class="wave" x="1039.9" y="190.7" width="3.2" height="28.6" rx="1.6"/><rect class="wave" x="1044.8" y="193.6" width="3.2" height="22.7" rx="1.6"/><rect class="wave" x="1049.7" y="198.3" width="3.2" height="13.5" rx="1.6"/><rect class="wave" x="1054.6" y="200.1" width="3.2" height="9.8" rx="1.6"/>
+  <line class="tick" x1="589.7" y1="262" x2="589.7" y2="282"/><text class="tl" x="589.7" y="298" text-anchor="middle">0.34</text>
+  <line class="tick" x1="655.3" y1="262" x2="655.3" y2="282"/>
+  <line class="tick" x1="675.8" y1="262" x2="675.8" y2="282"/><rect class="lblbg" x="656.8" y="286" width="38" height="17" rx="4"/><text class="tl cuet" x="675.8" y="299" text-anchor="middle">0.76</text>
+  <line class="tick" x1="817.2" y1="262" x2="817.2" y2="282"/><text class="tl" x="817.2" y="298" text-anchor="middle">1.45</text>
+  <line class="tick" x1="872.6" y1="262" x2="872.6" y2="282"/><text class="tl" x="872.6" y="298" text-anchor="middle">1.72</text>
+  <line class="tick" x1="971.0" y1="262" x2="971.0" y2="282"/><rect class="lblbg" x="952.0" y="286" width="38" height="17" rx="4"/><text class="tl cuet" x="971.0" y="299" text-anchor="middle">2.20</text>
+
+  <rect class="cur" x="581.5" y="363" width="118.9" height="34" rx="17"/>
+  <text class="cl" x="641.0" y="385" text-anchor="middle">glides to 10:30</text>
+  <circle class="click" cx="700.4" cy="380" r="9"/>
+  <circle class="ring" cx="700.4" cy="380" r="15"/>
+  <rect class="cur" x="786.5" y="363" width="209.1" height="34" rx="17"/>
+  <text class="cl" x="891.1" y="385" text-anchor="middle">glides to Book</text>
+  <circle class="click" cx="995.6" cy="380" r="9"/>
+  <circle class="ring" cx="995.6" cy="380" r="15"/>
+
+  <rect class="okc" x="638.4" y="448" width="124" height="32" rx="16"/>
+  <text class="okt" x="700.4" y="469" text-anchor="middle">+0.12 s  pass</text>
+  <rect class="okc" x="933.6" y="448" width="124" height="32" rx="16"/>
+  <text class="okt" x="995.6" y="469" text-anchor="middle">+0.12 s  pass</text>
+  <text class="tl" x="1185" y="469" text-anchor="end">fail above +0.4 s</text>
+
+  <line class="axis" x1="520.0" y1="508" x2="1185" y2="508"/>
+  <line class="tick" x1="520.0" y1="508" x2="520.0" y2="516"/><text class="tl" x="520.0" y="533" text-anchor="middle">0.0 s</text><line class="tick" x1="622.5" y1="508" x2="622.5" y2="516"/><text class="tl" x="622.5" y="533" text-anchor="middle">0.5 s</text><line class="tick" x1="725.0" y1="508" x2="725.0" y2="516"/><text class="tl" x="725.0" y="533" text-anchor="middle">1.0 s</text><line class="tick" x1="827.5" y1="508" x2="827.5" y2="516"/><text class="tl" x="827.5" y="533" text-anchor="middle">1.5 s</text><line class="tick" x1="930.0" y1="508" x2="930.0" y2="516"/><text class="tl" x="930.0" y="533" text-anchor="middle">2.0 s</text><line class="tick" x1="1032.5" y1="508" x2="1032.5" y2="516"/><text class="tl" x="1032.5" y="533" text-anchor="middle">2.5 s</text><line class="tick" x1="1135.0" y1="508" x2="1135.0" y2="516"/><text class="tl" x="1135.0" y="533" text-anchor="middle">3.0 s</text>
+  <text class="tl" x="1185" y="572" text-anchor="end">Measured on two lab apps: every action landed 0.07 to 0.21 s after its word.</text>
+</svg>

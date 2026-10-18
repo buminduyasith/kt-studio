@@ -1,0 +1,10 @@
+.DS_Store
+__pycache__/
+node_modules/
+*.mp4
+*.review.html
+evals/results/
+
+
+# Private notes for Claude and the private word list: never in git.
+/.claude/

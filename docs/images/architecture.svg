@@ -1,0 +1,158 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 880" width="1200" height="880" role="img" aria-labelledby="title desc">
+  <title id="title">How KT Studio fits together</title>
+  <desc id="desc">You ask Claude Code for a video. Claude Code runs the KT Studio skill, reads your project, publishes a storyboard for you to approve, and drives a recorder installed inside your project. The recorder plays your app in a real browser and writes the videos to a run folder.</desc>
+  <defs>
+    <style>
+      :root {
+        --bg: #ffffff; --ink: #1f2328; --muted: #59636e; --line: #8c959f; --chip: #f6f8fa; --chipline: #d1d9e0;
+        --you-f: #fbefff; --you-s: #8250df; --core-f: #ddf4ff; --core-s: #0969da; --proj-f: #dafbe1; --proj-s: #1a7f37;
+        --rt-f: #fff1e5; --rt-s: #bc4c00; --app-f: #ffeff7; --app-s: #bf3989; --card: #ffffff;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #0d1117; --ink: #e6edf3; --muted: #9198a1; --line: #6e7681; --chip: #151b23; --chipline: #3d444d;
+          --you-f: #231a33; --you-s: #ab7df8; --core-f: #0c2541; --core-s: #4493f8; --proj-f: #0f2a19; --proj-s: #3fb950;
+          --rt-f: #33200f; --rt-s: #f0883e; --app-f: #321a28; --app-s: #f778ba; --card: #0d1117;
+        }
+      }
+      text { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; fill: var(--ink); }
+      .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+      .h1 { font-size: 28px; font-weight: 700; }
+      .sub { font-size: 15px; fill: var(--muted); }
+      .h { font-size: 17px; font-weight: 700; }
+      .b { font-size: 13.5px; }
+      .m { font-size: 13px; fill: var(--muted); }
+      .lbl { font-size: 12.5px; fill: var(--muted); }
+      .bg { fill: var(--bg); }
+      .you { fill: var(--you-f); stroke: var(--you-s); stroke-width: 2; }
+      .core { fill: var(--core-f); stroke: var(--core-s); stroke-width: 2; }
+      .proj { fill: var(--proj-f); stroke: var(--proj-s); stroke-width: 2; }
+      .rt { fill: var(--rt-f); stroke: var(--rt-s); stroke-width: 2; }
+      .app { fill: var(--app-f); stroke: var(--app-s); stroke-width: 2; }
+      .card { fill: var(--card); stroke: var(--chipline); stroke-width: 1; }
+      .chip { fill: var(--chip); stroke: var(--chipline); stroke-width: 1; }
+      .arrow { stroke: var(--line); stroke-width: 2; fill: none; marker-end: url(#head); }
+      .dash { stroke-dasharray: 6 5; }
+      .tag-you { fill: var(--you-s); } .tag-core { fill: var(--core-s); } .tag-proj { fill: var(--proj-s); }
+      .tag-rt { fill: var(--rt-s); } .tag-app { fill: var(--app-s); }
+      .labelbg { fill: var(--bg); }
+    </style>
+    <marker id="head" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#8c959f"/>
+    </marker>
+  </defs>
+
+  <rect class="bg" x="0" y="0" width="1200" height="880" rx="16"/>
+
+  <text class="h1" x="40" y="54">How KT Studio fits together</text>
+  <text class="sub" x="40" y="82">One plugin, two small files in your project, and a recorder it installs next to your code.</text>
+
+  <!-- You -->
+  <rect class="you" x="460" y="112" width="280" height="96" rx="14"/>
+  <circle class="tag-you" cx="492" cy="160" r="16"/>
+  <circle cx="492" cy="153" r="5.5" fill="#ffffff"/>
+  <path d="M482,170 a10,8 0 0 1 20,0 z" fill="#ffffff"/>
+  <text class="h" x="520" y="152">You</text>
+  <text class="m" x="520" y="174">ask, review, say yes</text>
+  <text class="m" x="520" y="193">log in on hosted sites</text>
+
+  <!-- You to core -->
+  <path class="arrow" d="M600,208 L600,268"/>
+  <rect class="labelbg" x="612" y="222" width="250" height="34"/>
+  <text class="lbl mono" x="616" y="236">/kt-studio:init</text>
+  <text class="lbl mono" x="616" y="253">/kt-studio:make &lt;feature&gt; [instructions]</text>
+
+  <!-- Core: Claude Code + plugin -->
+  <rect class="core" x="370" y="270" width="460" height="244" rx="16"/>
+  <text class="h" x="392" y="302">Claude Code + KT Studio plugin</text>
+  <text class="m" x="392" y="323">terminal, desktop app or IDE; installed once</text>
+  <rect class="card" x="390" y="340" width="206" height="76" rx="10"/>
+  <text class="b mono" x="404" y="366" font-weight="700">SKILL.md</text>
+  <text class="m" x="404" y="387">the 11 steps and</text>
+  <text class="m" x="404" y="405">the safety rules</text>
+  <rect class="card" x="604" y="340" width="206" height="76" rx="10"/>
+  <text class="b mono" x="618" y="366" font-weight="700">references/</text>
+  <text class="m" x="618" y="387">how to research, design,</text>
+  <text class="m" x="618" y="405">record and check</text>
+  <rect class="card" x="390" y="424" width="206" height="76" rx="10"/>
+  <text class="b mono" x="404" y="450" font-weight="700">scripts/</text>
+  <text class="m" x="404" y="471">doctor, setup, login,</text>
+  <text class="m" x="404" y="489">checks, finish</text>
+  <rect class="card" x="604" y="424" width="206" height="76" rx="10"/>
+  <text class="b mono" x="618" y="450" font-weight="700">assets/studio/</text>
+  <text class="m" x="618" y="471">sync library, code view,</text>
+  <text class="m" x="618" y="489">word timing tools</text>
+
+  <!-- Project -->
+  <rect class="proj" x="40" y="270" width="270" height="244" rx="16"/>
+  <text class="h" x="62" y="302">Your project</text>
+  <text class="m" x="62" y="323">what the skill reads</text>
+  <text class="b mono" x="62" y="356" font-weight="700">.kt-studio/config.yml</text>
+  <text class="m" x="62" y="375">repos, docs, voice</text>
+  <text class="b mono" x="62" y="404" font-weight="700">.kt-studio/instructions.md</text>
+  <text class="m" x="62" y="423">rules, services, addresses</text>
+  <text class="b" x="62" y="452" font-weight="700">Repos at a branch</text>
+  <text class="m" x="62" y="471">every code fact, with file:line</text>
+  <text class="b" x="62" y="497" font-weight="700">Docs <tspan class="m" font-weight="400">read first</tspan></text>
+
+  <path class="arrow" d="M370,392 L314,392"/>
+  <text class="lbl" x="342" y="382" text-anchor="middle">reads</text>
+
+  <!-- Storyboard artifact -->
+  <rect class="you" x="890" y="270" width="270" height="244" rx="16"/>
+  <text class="h" x="912" y="302">Storyboard</text>
+  <text class="m" x="912" y="323">a private page on claude.ai</text>
+  <text class="b" x="912" y="358">Scenes with screenshots,</text>
+  <text class="b" x="912" y="378">voice lines and code</text>
+  <text class="b" x="912" y="410">You comment, it updates,</text>
+  <text class="b" x="912" y="430">as many rounds as needed</text>
+  <rect x="912" y="452" width="226" height="40" rx="8" class="chip"/>
+  <text class="b" x="925" y="477" font-weight="700">Gate 1 <tspan class="m" font-weight="400">nothing records before</tspan></text>
+
+  <path class="arrow" d="M830,392 L886,392"/>
+  <text class="lbl" x="858" y="382" text-anchor="middle">publishes</text>
+  <path class="arrow dash" d="M740,160 C900,160 1025,190 1025,266"/>
+  <text class="lbl" x="905" y="150">comments, approval</text>
+
+  <!-- Core to runtime -->
+  <path class="arrow" d="M600,514 L600,580"/>
+  <rect class="labelbg" x="612" y="532" width="250" height="30"/>
+  <text class="lbl" x="616" y="551">setup installs it; scripts drive it</text>
+
+  <!-- Runtime -->
+  <rect class="rt" x="250" y="582" width="700" height="134" rx="16"/>
+  <text class="h" x="272" y="614">The recorder <tspan class="mono" font-size="14" font-weight="400">.kt-studio/runtime</tspan></text>
+  <text class="m" x="272" y="635">inside your project, ignored by git, checked by the doctor at the start of every run</text>
+  <rect class="chip" x="272" y="652" width="150" height="44" rx="10"/>
+  <text class="b" x="347" y="679" text-anchor="middle" font-weight="600">Argo recorder</text>
+  <rect class="chip" x="434" y="652" width="190" height="44" rx="10"/>
+  <text class="b" x="529" y="679" text-anchor="middle" font-weight="600">Playwright + Chromium</text>
+  <rect class="chip" x="636" y="652" width="160" height="44" rx="10"/>
+  <text class="b" x="716" y="679" text-anchor="middle" font-weight="600">Kokoro voice</text>
+  <rect class="chip" x="808" y="652" width="120" height="44" rx="10"/>
+  <text class="b" x="868" y="679" text-anchor="middle" font-weight="600">ffmpeg</text>
+
+  <!-- Runtime to app and runs -->
+  <path class="arrow" d="M420,716 L420,770"/>
+  <text class="lbl" x="432" y="748">plays the screens</text>
+  <path class="arrow" d="M780,716 L780,770"/>
+  <text class="lbl" x="792" y="748">writes</text>
+
+  <rect class="app" x="250" y="772" width="340" height="84" rx="14"/>
+  <text class="h" x="272" y="804">Your app</text>
+  <text class="m" x="272" y="826">local, dev or QA, in a real browser</text>
+  <text class="m" x="272" y="844">at 1920 x 1080; you log in on hosted sites</text>
+
+  <rect class="proj" x="610" y="772" width="340" height="84" rx="14"/>
+  <text class="h mono" x="632" y="804" font-size="15">runs/&lt;date&gt;-&lt;feature&gt;/</text>
+  <text class="m" x="632" y="826">brief, storyboard, scripts, checks,</text>
+  <text class="m" x="632" y="844">videos with subtitles and chapters</text>
+
+  <!-- side note -->
+  <text class="lbl" x="40" y="604">Offline voice:</text>
+  <text class="lbl" x="40" y="622">the narration never</text>
+  <text class="lbl" x="40" y="640">leaves your computer.</text>
+  <text class="lbl" x="1160" y="604" text-anchor="end">Your code is read</text>
+  <text class="lbl" x="1160" y="622" text-anchor="end">at the branch you set,</text>
+  <text class="lbl" x="1160" y="640" text-anchor="end">never changed.</text>
+</svg>
