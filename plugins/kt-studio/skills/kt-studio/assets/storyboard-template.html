@@ -1,3 +1,4 @@
+<meta charset="utf-8">
 <title>__TITLE__</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -103,7 +104,7 @@ ul.plain { margin: 0; padding-left: 18px; display: grid; gap: 6px; }
 .pic img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .slate { position: absolute; left: 10px; top: 10px; display: flex; gap: 6px; pointer-events: none; }
 .slate span { font: 700 14px/1 var(--display); letter-spacing: .06em; background: rgba(8, 12, 16, .82); color: #fff; padding: 6px 8px; border-radius: 4px; }
-.slate .kind-ui { box-shadow: inset 0 -3px 0 #2fb3a6; } .slate .kind-code, .slate .kind-nav { box-shadow: inset 0 -3px 0 #8b92ff; } .slate .kind-title { box-shadow: inset 0 -3px 0 #c9ced6; } .slate .kind-diagram { box-shadow: inset 0 -3px 0 #ffc400; } .slate .kind-terminal { box-shadow: inset 0 -3px 0 #23d18b; }
+.slate .kind-ui { box-shadow: inset 0 -3px 0 #2fb3a6; } .slate .kind-code, .slate .kind-nav { box-shadow: inset 0 -3px 0 #8b92ff; } .slate .kind-title { box-shadow: inset 0 -3px 0 #c9ced6; } .slate .kind-diagram, .slate .kind-map { box-shadow: inset 0 -3px 0 #ffc400; } .slate .kind-terminal { box-shadow: inset 0 -3px 0 #23d18b; }
 .card.term .out { flex: 1; overflow: hidden; padding: 10px 12px; font: 10.5px/1.45 var(--mono); white-space: pre-wrap; word-break: break-all; color: #cccccc; }
 .card.term .out .p { color: #23d18b; } .card.term .out mark { background: rgba(255, 196, 0, .25); color: #ffd866; }
 .dur { pointer-events: none; position: absolute; right: 10px; bottom: 10px; font: 500 12px/1 var(--mono); background: rgba(8, 12, 16, .82); color: #fff; padding: 5px 7px; border-radius: 4px; font-variant-numeric: tabular-nums; }
@@ -144,7 +145,14 @@ ul.plain { margin: 0; padding-left: 18px; display: grid; gap: 6px; }
 .card.title { align-items: center; justify-content: center; text-align: center; padding: 16px; background: radial-gradient(circle at 50% 40%, #2a2f38, #14171c); }
 .card.title .t { font: 700 clamp(20px, 3vw, 28px)/1.1 var(--display); color: #f2f2f2; letter-spacing: .02em; }
 .card.title .s { font: 13px/1.4 var(--body); color: #a9b1bd; margin-top: 6px; }
-.card.diagram svg { width: 100%; height: 100%; display: block; }
+.card.diagram svg, .card.map svg { width: 100%; height: 100%; display: block; }
+.card.map .mt { fill: #8b8b8b; font: 700 10px var(--body); letter-spacing: 1px; }
+.card.map .grp rect { fill: rgba(255,255,255,.03); stroke: #4a4a52; stroke-dasharray: 4 4; } .card.map .grp text { fill: #8a8a94; font: 700 9px var(--body); letter-spacing: 1px; }
+.card.map .nd rect { fill: #252526; stroke: #4a4a4a; } .card.map .nd text { fill: #e6e6e6; font: 600 11px var(--body); }
+.card.map .nd.k-external rect { stroke-dasharray: 4 3; } .card.map .nd.zoom rect { stroke: #ffc400; stroke-width: 2.5; }
+.card.map .ln line { stroke: #8a8a8a; stroke-width: 2; } .card.map .ln.later { opacity: 0; } .card.map .ln.done { opacity: .45; }
+.card.map .ln.now line { stroke: #ffc400; stroke-width: 3; } .card.map .ln.k-event line { stroke-dasharray: 6 4; } .card.map .ln.k-fail.now line { stroke: #f14c4c; }
+.card.map .ln text { fill: #ffe7a0; font: 11px var(--mono); paint-order: stroke; stroke: #1e1e1e; stroke-width: 4px; }
 .card.diagram .act rect { fill: #252526; stroke: #4a4a4a; } .card.diagram .act text { fill: #e6e6e6; font: 600 13px var(--body); }
 .card.diagram .life { stroke: #3a3a3a; stroke-dasharray: 4 4; }
 .card.diagram .m line, .card.diagram .m path { stroke: #8a8a8a; stroke-width: 2; fill: none; } .card.diagram .m polygon { fill: #8a8a8a; }
@@ -211,7 +219,7 @@ footer { margin-top: 48px; padding-top: 14px; border-top: 1px solid var(--line);
     .replace(/\b((?:variables|secrets):)/g, '<code>$1</code>')
     .replace(/\*\*([^*]+)\*\*/g, '<b>$1</b>');
   const mmss = (sec) => `${Math.floor(sec / 60)}:${String(Math.round(sec % 60)).padStart(2, '0')}`;
-  const KIND = { ui: 'Screen', code: 'Code', nav: 'Folders', title: 'Title', diagram: 'Diagram', terminal: 'Terminal' };
+  const KIND = { ui: 'Screen', code: 'Code', nav: 'Folders', title: 'Title', diagram: 'Diagram', terminal: 'Terminal', map: 'Map' };
 
   const scenesOf = (part) => part.chapters.flatMap((c) => c.scenes);
   const total = D.parts.reduce((t, p) => t + scenesOf(p).reduce((a, s) => a + s.seconds, 0), 0);
@@ -253,9 +261,51 @@ footer { margin-top: 48px; padding-top: 14px; border-top: 1px solid var(--line);
     return `<div class="card diagram"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Sequence diagram ${esc(s.diagram.use)}, steps ${first} to ${last}">${out}</svg></div>`;
   };
 
+  // Map scenes: the system map drawn small. What this scene plays is lit, what came before is faint,
+  // what comes later is hidden; an overview shows every link; a zoom rings the node it goes into.
+  const sysmap = (s) => {
+    const mp = (D.maps || {})[s.map?.use];
+    if (!mp) return `<div class="card title"><div><div class="t">${esc(s.title)}</div></div></div>`;
+    const nodes = mp.nodes.map((n, i) => ({ col: i, row: 0, kind: 'service', ...n }));
+    const cols = Math.max(...nodes.map((n) => n.col)) + 1, rows = Math.max(...nodes.map((n) => n.row)) + 1;
+    const W = 640, H = 360, pad = 14, top = 46, cw = (W - 2 * pad) / cols, ch = (H - top - 14) / rows;
+    const bw = Math.min(118, cw - 14), bh = 34;
+    const G = Object.fromEntries(nodes.map((n) => [n.id, { ...n, x: pad + cw * (n.col + 0.5), y: top + ch * (n.row + 0.5) }]));
+    const steps = mp.steps || [];
+    const [first, last = first] = s.map.steps || (s.map.overview || s.map.replay ? [1, steps.length] : [0]);
+    let out = mp.title ? `<text class="mt" x="${W - pad}" y="20" text-anchor="end">${esc(mp.title.toUpperCase())}</text>` : '';
+    let labels = '';
+    for (const g of mp.groups || []) {
+      const ms = g.nodes.map((id) => G[id]).filter(Boolean);
+      if (!ms.length) continue;
+      const x1 = Math.min(...ms.map((n) => n.x)) - bw / 2 - 8, x2 = Math.max(...ms.map((n) => n.x)) + bw / 2 + 8;
+      const y1 = Math.min(...ms.map((n) => n.y)) - bh / 2 - 18, y2 = Math.max(...ms.map((n) => n.y)) + bh / 2 + 8;
+      out += `<g class="grp"><rect x="${x1}" y="${y1}" width="${x2 - x1}" height="${y2 - y1}" rx="8"/><text x="${x1 + 8}" y="${y1 + 12}">${esc(g.label.toUpperCase())}</text></g>`;
+    }
+    steps.forEach((st, i) => {
+      const n = i + 1, cls = s.map.overview ? 'done' : n < first ? 'done' : n <= last ? 'now' : 'later';
+      for (const to of [].concat(st.to)) {
+        const a = G[st.from], b = G[to];
+        if (!a || !b) continue;
+        out += `<g class="ln ${cls} k-${st.kind || 'call'}"><line x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}"/></g>`;
+        // Labels go on top of the boxes, so a short link between two neighbours still shows its words.
+        if (cls === 'now' && to === [].concat(st.to)[0]) labels += `<g class="ln now"><text x="${(a.x + b.x) / 2}" y="${(a.y + b.y) / 2 - 22}" text-anchor="middle">${n}. ${esc(st.label)}</text></g>`;
+      }
+    });
+    for (const n of Object.values(G)) {
+      const cls = n.id === s.map.zoom ? 'zoom' : '';
+      out += `<g class="nd ${cls} k-${n.kind}"><rect x="${n.x - bw / 2}" y="${n.y - bh / 2}" width="${bw}" height="${bh}" rx="${n.kind === 'person' || n.kind === 'state' ? bh / 2 : 6}"/>`
+        + `<text x="${n.x}" y="${n.y + 4}" text-anchor="middle">${esc(n.label)}</text></g>`;
+    }
+    out += labels;
+    const what = s.map.overview ? 'overview' : s.map.zoom ? `zoom into ${s.map.zoom}` : s.map.replay ? 'replay' : s.map.steps ? `steps ${first} to ${last}` : 'build up';
+    return `<div class="card map"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Map ${esc(s.map.use)}, ${esc(what)}">${out}</svg></div>`;
+  };
+
   // Code, folder and title scenes are drawn from data: file and method are enough to review them.
   const card = (s) => {
     if (s.kind === 'diagram') return diagram(s);
+    if (s.kind === 'map') return sysmap(s);
     if (s.kind === 'terminal') {
       const t = s.terminal || {};
       let out = esc(t.output || '');

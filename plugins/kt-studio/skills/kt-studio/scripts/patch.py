@@ -36,7 +36,7 @@ import project  # noqa: E402
 FPS = 30
 PARTS = {"A": "ui", "B": "code"}
 # What a viewer sees or hears of a scene. A change in any of these needs the scene recorded again.
-SEEN = ("voice", "kind", "code", "note", "action", "terminal", "diagram", "screen", "flags", "overlay")
+SEEN = ("voice", "kind", "code", "note", "action", "terminal", "diagram", "map", "where", "screen", "flags", "overlay")
 SEAMLESS = 2.0      # mean difference (0 to 255) of two frames that look the same (cursor, caret, anti-aliasing)
 TOO_DIFFERENT = 25.0
 DISSOLVE_S = 0.25

@@ -13,7 +13,9 @@ import sys
 from pathlib import Path
 
 TEMPLATE = Path(__file__).resolve().parent.parent / "assets" / "storyboard-template.html"
-KINDS = {"ui", "code", "nav", "title", "diagram", "terminal"}
+KINDS = {"ui", "code", "nav", "title", "diagram", "terminal", "map"}
+NODE_KINDS = {"person", "app", "service", "job", "database", "cache", "queue", "external", "state"}
+STEP_KINDS = {"call", "reply", "event", "write", "read", "fail"}
 STATUSES = {"ready", "planned", "after-write"}
 
 
@@ -31,6 +33,80 @@ def diagram_problems(sid: str, use: dict, diagrams: dict) -> list[str]:
     steps = use.get("steps", [])
     if not (isinstance(steps, list) and 1 <= len(steps) <= 2 and all(isinstance(n, int) and 1 <= n <= len(d.get("steps", [])) for n in steps)):
         found.append(f"{sid}: diagram.steps must be [first] or [first, last] within 1..{len(d.get('steps', []))}")
+    return found
+
+
+def map_problems(name: str, m: dict) -> list[str]:
+    """A system map (top-level `maps`): nodes on a small grid, optional boundaries, and the steps of the journey."""
+    found = []
+    nodes = m.get("nodes")
+    if not isinstance(nodes, list) or not nodes:
+        return [f"map {name}: nodes must be a non-empty list"]
+    ids = [n.get("id") for n in nodes]
+    if len(set(ids)) != len(ids) or not all(isinstance(i, str) and i for i in ids):
+        found.append(f"map {name}: every node needs a unique id")
+    places = {}
+    for i, n in enumerate(nodes):
+        if n.get("kind", "service") not in NODE_KINDS:
+            found.append(f"map {name} node {n.get('id')}: kind must be one of {sorted(NODE_KINDS)}")
+        if not n.get("label"):
+            found.append(f"map {name} node {n.get('id')}: missing label")
+        col, row = n.get("col", i), n.get("row", 0)
+        if not (isinstance(col, int) and isinstance(row, int) and col >= 0 and row >= 0):
+            found.append(f"map {name} node {n.get('id')}: col and row must be whole numbers from 0")
+            continue
+        if (col, row) in places:
+            found.append(f"map {name}: nodes {places[(col, row)]} and {n.get('id')} share col {col}, row {row}")
+        places[(col, row)] = n.get("id")
+    if len(nodes) > 9:
+        found.append(f"map {name}: {len(nodes)} nodes; keep 9 or fewer on one map (split it, or zoom into one part)")
+    where = {n.get("id"): (n.get("col", i), n.get("row", 0)) for i, n in enumerate(nodes)}
+    for g in m.get("groups", []) or []:
+        members = [where[i] for i in g.get("nodes", []) if i in where]
+        if not g.get("label") or len(members) != len(g.get("nodes", [])) or not members:
+            found.append(f"map {name}: group {g.get('label')!r} needs a label and nodes that exist")
+            continue
+        cols = range(min(c for c, _ in members), max(c for c, _ in members) + 1)
+        rows = range(min(r for _, r in members), max(r for _, r in members) + 1)
+        for other, (c, r) in where.items():
+            if other not in g["nodes"] and c in cols and r in rows:
+                found.append(f"map {name}: group {g['label']!r} would draw its box around {other}, which is not in it; move {other} out of cols {cols.start}-{cols.stop - 1}, rows {rows.start}-{rows.stop - 1}")
+    steps = m.get("steps", [])
+    if not isinstance(steps, list):
+        return found + [f"map {name}: steps must be a list"]
+    for i, s in enumerate(steps, start=1):
+        targets = s.get("to") if isinstance(s.get("to"), list) else [s.get("to")]
+        for side in [s.get("from"), *targets]:
+            if side not in where:
+                found.append(f"map {name} step {i}: '{side}' is not one of its nodes")
+        if s.get("kind", "call") not in STEP_KINDS:
+            found.append(f"map {name} step {i}: kind must be one of {sorted(STEP_KINDS)}")
+        if not s.get("label"):
+            found.append(f"map {name} step {i}: missing label")
+        state = s.get("state")
+        if state is not None and not (isinstance(state, dict) and state.get("text") and state.get("node", targets[0]) in where):
+            found.append(f"map {name} step {i}: state must be {{node, text}} with a node of the map")
+    return found
+
+
+def map_scene_problems(sid: str, use: dict, maps: dict) -> list[str]:
+    """A map scene names a map and says what it does: reveal nodes, play steps, show the overview, zoom, replay."""
+    m = maps.get(use.get("use"))
+    if not m:
+        return [f"{sid}: map.use must name one of the top-level maps ({sorted(maps) or 'none defined'})"]
+    found = []
+    ids = {n.get("id") for n in m.get("nodes", [])}
+    for i in use.get("reveal", []) or []:
+        if i not in ids:
+            found.append(f"{sid}: map.reveal names '{i}', which is not a node of {use['use']}")
+    if use.get("zoom") is not None and use["zoom"] not in ids:
+        found.append(f"{sid}: map.zoom names '{use['zoom']}', which is not a node of {use['use']}")
+    steps = use.get("steps")
+    count = len(m.get("steps", []))
+    if steps is not None and not (isinstance(steps, list) and 1 <= len(steps) <= 2 and all(isinstance(n, int) and 1 <= n <= count for n in steps)):
+        found.append(f"{sid}: map.steps must be [first] or [first, last] within 1..{count}")
+    if not any(use.get(k) for k in ("reveal", "steps", "overview", "zoom", "replay")):
+        found.append(f"{sid}: a map scene does something: reveal, steps, overview, zoom or replay")
     return found
 
 
@@ -64,8 +140,10 @@ def problems(data: dict, folder: Path) -> list[str]:
     for part in data.get("parts", []):
         for chapter in part.get("chapters", []):
             for scene in chapter.get("scenes", []):
-                if part.get("id") == "A" and scene.get("kind") in ("code", "nav", "diagram", "terminal"):
+                if part.get("id") == "A" and scene.get("kind") in ("code", "nav", "diagram", "terminal", "map"):
                     found.append(f"{scene.get('id', '?')}: {scene['kind']} scenes belong in Part B (Part A records the app)")
+    for name, m in (data.get("maps") or {}).items():
+        found += map_problems(name, m)
     seen = set()
     for part in data.get("parts", []):
         for chapter in part.get("chapters", []):
@@ -91,6 +169,13 @@ def problems(data: dict, folder: Path) -> list[str]:
                         found.append(f"{sid}: terminal.output has {len(t['output'].splitlines())} lines; keep 14 or fewer (trim it, or pipe through head or jq)")
                 if scene.get("kind") == "diagram":
                     found += diagram_problems(sid, scene.get("diagram", {}), data.get("diagrams", {}))
+                if scene.get("kind") == "map":
+                    found += map_scene_problems(sid, scene.get("map", {}), data.get("maps", {}))
+                here = scene.get("where")
+                if here is not None:
+                    m = (data.get("maps") or {}).get(here.get("map")) if isinstance(here, dict) else None
+                    if not m or here.get("node") not in {n.get("id") for n in m.get("nodes", [])}:
+                        found.append(f"{sid}: where must be {{map, node}} naming a node of one of the top-level maps")
                 shot = scene.get("shot")
                 if shot and not (folder / shot).exists():
                     found.append(f"{sid}: shot not found: {shot}")
@@ -128,7 +213,7 @@ def estimate(data: dict) -> list[str]:
 
 
 # What a viewer sees or hears of a scene (the same list as patch.py): a difference means "Changed in this update".
-SEEN = ("voice", "kind", "code", "note", "action", "terminal", "diagram", "screen", "flags", "overlay")
+SEEN = ("voice", "kind", "code", "note", "action", "terminal", "diagram", "map", "where", "screen", "flags", "overlay")
 
 
 def mark_changes(data: dict, folder: Path) -> int:
@@ -157,6 +242,10 @@ def build(folder: Path) -> Path:
     changed = mark_changes(data, folder)
     if changed:
         print(f"update: {changed} scene(s) differ from the delivered video and are marked Changed")
+    for name, m in (data.get("maps") or {}).items():
+        for i, step in enumerate(m.get("steps", []), start=1):
+            if len(step.get("payload", step.get("label", ""))) > 36:
+                print(f"note: map {name} step {i}: the travelling text is {len(step.get('payload', step.get('label', '')))} characters; keep it to about 36")
     for name, d in (data.get("diagrams") or {}).items():
         for i, step in enumerate(d.get("steps", []), start=1):
             if len(step.get("label", "")) > 32:

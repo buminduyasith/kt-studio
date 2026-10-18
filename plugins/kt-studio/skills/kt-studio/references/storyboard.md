@@ -53,6 +53,29 @@ The build checks required fields and stops with a list of problems.
                           { "from": "API", "to": "Payments", "label": "refund(charge)" },
                           { "from": "API", "to": "Web", "label": "201 Created", "reply": true }] }
   },
+  "maps": {
+    "refund": {
+      "title": "How a refund travels",
+      "nodes": [
+        { "id": "agent", "label": "Support agent", "kind": "person", "col": 0, "row": 1 },
+        { "id": "shop", "label": "Shop", "sub": "web app", "kind": "app", "col": 1, "row": 1 },
+        { "id": "api", "label": "Orders API", "kind": "service", "col": 2, "row": 1 },
+        { "id": "db", "label": "Postgres", "sub": "orders, refunds", "kind": "database", "col": 2, "row": 2 },
+        { "id": "topic", "label": "refund.created", "kind": "queue", "col": 3, "row": 0 },
+        { "id": "pay", "label": "Payment provider", "kind": "external", "col": 4, "row": 1 }
+      ],
+      "groups": [{ "label": "Acme", "nodes": ["shop", "api", "db", "topic"] }],
+      "steps": [
+        { "from": "agent", "to": "shop", "label": "clicks Refund" },
+        { "from": "shop", "to": "api", "label": "POST /refunds", "payload": "{ order: 1042, amount: 20 }" },
+        { "from": "api", "to": "db", "label": "saves the refund", "kind": "write", "state": { "node": "db", "text": "refund 77: PENDING" } },
+        { "from": "api", "to": "shop", "label": "202 Accepted", "kind": "reply" },
+        { "from": "api", "to": "topic", "label": "refund.created", "kind": "event", "payload": "refund 77" },
+        { "from": "topic", "to": "pay", "label": "refund(charge)", "kind": "event" },
+        { "from": "pay", "to": "api", "label": "timeout after 10 s", "kind": "fail" }
+      ]
+    }
+  },
   "production": {
     "pace": ["Voice speed 0.9", "1.5 s pause after each point", "No fades between scenes"],
     "pronounce": [["AcmePay", "Acme Pay"]],   // start from voice.pronounce in the config, add new ones
@@ -67,7 +90,7 @@ The build checks required fields and stops with a list of problems.
 | Field | Meaning |
 |---|---|
 | `id` | `A1-03` = part A, chapter 1, scene 3. Stable across rounds (comments refer to it) |
-| `kind` | `ui` (a real screen), `code` (a file and method), `nav` (walking the folders), `title` (a title card), `diagram` (a sequence diagram, Part B), `terminal` (a real command and its real output, Part B) |
+| `kind` | `ui` (a real screen), `code` (a file and method), `nav` (walking the folders), `title` (a title card), `diagram` (a sequence diagram, Part B), `map` (the system map in motion, Part B), `terminal` (a real command and its real output, Part B) |
 | `status` | `ready` (picture captured or drawn), `planned` (screen not captured yet), `after-write` (the screen only exists after a save or push, so it is captured during recording) |
 | `title` | Short scene name |
 | `heading` | Slug line, for example `SCREEN · Refund drawer · dev` or `CODE · api · refund.service.ts:40-58` |
@@ -82,6 +105,8 @@ The build checks required fields and stops with a list of problems.
 | `flags` | `["writes"]` when the scene saves, pushes, creates or deletes something |
 | `terminal` | `terminal` scenes: `{ "cwd": "api", "cmd": "curl -s -X POST localhost:8080/loans -d '{...}'", "output": "<what it really printed>", "marks": ["409", "fine limit"] }`. `cwd` is the folder shown in the prompt (the repo key or a short path, where the command was run); `output` is copied from running the command before the storyboard (at most 14 lines; trim with `head` or `jq`); `marks` are the bits the voice names, lit on screen |
 | `diagram` | `diagram` scenes: `{ "use": "refund", "steps": [2, 3] }`: which diagram from the top-level `diagrams`, and the steps this scene lights (earlier steps stay visible, later ones are hidden) |
+| `map` | `map` scenes: which map from the top-level `maps`, and what the scene does, one or more of: `"reveal": ["shop", "api"]` (bring these parts in, in this order), `"overview": true` (every part and link, still: the high-level design), `"steps": [2, 4]` (play steps 2 to 4 of the journey), `"zoom": "api"` (zoom into a part, right before its code), `"replay": true` (the whole journey again, quickly, for the recap). Parts and links shown in earlier scenes stay |
+| `where` | Optional, `code` and `nav` scenes: `{ "map": "refund", "node": "api" }`: the small map in the corner of the code, with this part lit ("you are here") |
 
 ## Pictures
 
@@ -114,6 +139,20 @@ The build checks required fields and stops with a list of problems.
     (`limit is 280`, not `280`).
 - **Code, nav and title scenes are drawn** from the data. File, method and lines are enough to
   review them. No screenshot.
+- **Map scenes are drawn** from `maps` (the storyboard shows each one small, with its steps lit; the
+  video animates them, `references/kt-design.md` section 3b). A map is the system as the research found
+  it (`references/research.md` section 8), every part and link with evidence in the brief:
+  - `nodes`: `id`, `label` (the team's name for it), optional `sub` (a few words), `kind` (`person`,
+    `app`, `service`, `job`, `database`, `cache`, `queue`, `external`, `state`), and `col`, `row` on a
+    small grid (0-based). Left to right follows the main flow; data stores go under their service.
+    At most 9 nodes; no two on the same cell.
+  - `groups`: boundaries, `{ label, nodes }`, drawn around their nodes. The box spans from the first to
+    the last column and row of its nodes, so no other node may sit inside that range (the build checks).
+  - `steps`: the journey, in order: `from`, `to` (a list for an event that reaches several consumers),
+    `label` (what the step means or its real call), optional `kind` (`call`, `reply`, `event`, `write`,
+    `read`, `fail`), `payload` (the real data that travels, at most about 36 characters) and `state`
+    (`{ node, text }`: what is stored after this step).
+  - A map with only `state` nodes is a state diagram: its steps are the moves, labelled with the event.
 - **Diagram scenes are drawn** from `diagrams`: actors across the top, one arrow per step, in order.
   Use one for the big picture before the code (who calls whom), and light it step by step over a few
   scenes. Keep it to at most 6 actors and 10 steps; labels are what the step means or its real call
@@ -132,6 +171,9 @@ The build checks required fields and stops with a list of problems.
   actions than its line can carry, split it. Say a server result in the next scene, after it shows.
 - Every code fact must come from the file at its repo's ref. Read it with
   `git -C <repo> show <ref>:./<path>` and put the real line range in `code.lines`.
+- Narrate only facts the brief labels `CODE` or `RUN`. A `DOC-ONLY` claim stays in `overview.questions`;
+  a `CONFLICT` (a stale doc) can be a trap scene, never a fact.
+- On screen, labels and key terms only: the voice carries the sentences.
 - Put the rule that trips people up in the UI part first, then show where it lives in the code.
 - Name every write in `overview.writes` and flag its scene.
 - Fill `brief.readAs` with how you understood each user instruction, so a misreading is caught in review.

@@ -1,0 +1,73 @@
+/* System maps: the parts of a system and a request travelling between them (map.js). */
+#map { position: absolute; inset: 0; z-index: 6; background: var(--bg); opacity: 0; transition: opacity .45s; pointer-events: none; }
+#map.on { opacity: 1; }
+#map svg { width: 100%; height: 100%; stroke: none; overflow: visible; }
+#map .mtitle { fill: #8b8b8b; font: 700 15px/1 -apple-system, Arial, sans-serif; letter-spacing: 1.4px; }
+
+#map .node { transition: opacity .35s; }
+#map .node.hidden { opacity: 0; }
+#map .node.dim { opacity: .28; }
+#map .node.rest { opacity: .55; }
+#map .node .shape { fill: #252526; stroke: #4a4a4a; stroke-width: 2; transition: stroke .3s, fill .3s; }
+#map .node .rim { fill: none; stroke: #4a4a4a; stroke-width: 2; }
+#map .node .slot { stroke: #3c3c3c; stroke-width: 2; }
+#map .node.k-external .shape { stroke-dasharray: 8 6; }
+#map .node.k-person .shape { fill: #2b2b33; }
+#map .node.k-state .shape { fill: #26302b; }
+#map .node.active .shape, #map .node.active .rim { stroke: var(--focus-bar); }
+#map .node .tag { fill: #7a7a7a; font: 700 12px/1 -apple-system, Arial, sans-serif; letter-spacing: 1.6px; }
+#map .node .name { fill: #e6e6e6; font: 600 22px -apple-system, Arial, sans-serif; }
+#map .node .sub { fill: #8b8b8b; font: 15px -apple-system, Arial, sans-serif; }
+#map .state rect { fill: #1b3a2f; stroke: #4ec9b0; stroke-width: 1.5; }
+#map .state text { fill: #bff0e2; font: 600 15px var(--mono); }
+
+#map .link { transition: opacity .35s; }
+#map .link.later { opacity: 0; }
+#map .link.done { opacity: .3; }
+#map .link.travel .label { opacity: 0; }
+#map .link.all { opacity: .9; } #map .link.all .label { opacity: 1; font-size: 16px; }
+#map .group rect { fill: rgba(255, 255, 255, .025); stroke: #3f3f46; stroke-width: 1.5; stroke-dasharray: 6 6; }
+#map .group .glabel { fill: #7a7a85; font: 700 13px/1 -apple-system, Arial, sans-serif; letter-spacing: 1.5px; }
+#map .link.done .label { opacity: 0; }
+#map .link.dim { opacity: .12; }
+#map .wire { stroke: #a0a0a0; stroke-width: 3; fill: none; stroke-dasharray: var(--len); stroke-dashoffset: var(--len); }
+#map .link.done .wire, #map .link.now .wire { stroke-dashoffset: 0; }
+#map .head { fill: #a0a0a0; }
+#map .label { fill: #cfcfcf; font: 18px var(--mono); paint-order: stroke; stroke: var(--bg); stroke-width: 6px; }
+/* Each kind of message has its colour; async events are dashed, as they do not wait for an answer. */
+#map .s-call .wire, #map .link.now.s-call .wire { stroke: var(--focus-bar); } #map .s-call .head { fill: var(--focus-bar); }
+#map .s-reply .wire { stroke: #6fb3d2; } #map .s-reply .head { fill: #6fb3d2; }
+#map .s-event .wire { stroke: #c586c0; } #map .s-event .head { fill: #c586c0; }
+#map .link.s-event.now .wire, #map .link.s-event.done .wire { stroke-dasharray: 10 8; }
+#map .s-write .wire, #map .s-read .wire { stroke: #4ec9b0; } #map .s-write .head, #map .s-read .head { fill: #4ec9b0; }
+#map .s-fail .wire { stroke: #f14c4c; } #map .s-fail .head { fill: #f14c4c; }
+#map .link.now .label { fill: #ffe7a0; }
+
+#map .packet rect { fill: #3a3000; stroke: var(--focus-bar); stroke-width: 2; }
+#map .packet text { fill: #ffe7a0; font: 600 16px var(--mono); }
+#map .packet.s-reply rect { fill: #10293a; stroke: #6fb3d2; } #map .packet.s-reply text { fill: #cfe9f7; }
+#map .packet.s-event rect { fill: #2e1f30; stroke: #c586c0; } #map .packet.s-event text { fill: #f0d7ee; }
+#map .packet.s-write rect, #map .packet.s-read rect { fill: #133229; stroke: #4ec9b0; } #map .packet.s-write text, #map .packet.s-read text { fill: #bff0e2; }
+#map .packet.s-fail rect, #map .packet.broken rect { fill: #3a1414; stroke: #f14c4c; } #map .packet.s-fail text { fill: #ffd0d0; }
+#map .packet .cross { fill: #f14c4c; font: 700 26px Arial; }
+
+#map .strip .chip { opacity: .35; transition: opacity .3s; }
+#map .strip .chip.done { opacity: .6; }
+#map .strip .chip.now { opacity: 1; }
+#map .strip circle { fill: #3c3c3c; } #map .strip .chip.now circle { fill: var(--focus-bar); }
+#map .strip .num { fill: #e6e6e6; font: 700 14px Arial; } #map .strip .chip.now .num { fill: #1e1e1e; }
+#map .strip .what { fill: #bdbdbd; font: 15px var(--mono); } #map .strip .chip.now .what { fill: #ffe7a0; }
+
+/* "You are here": the map, small, in the corner while the code is on screen. */
+#locator { position: absolute; right: 18px; bottom: 16px; z-index: 4; width: 400px; padding: 6px; border-radius: 10px;
+  background: rgba(37, 37, 38, .94); border: 1px solid #3c3c3c; opacity: 0; transition: opacity .4s; pointer-events: none; }
+#locator.on { opacity: 1; }
+#locator .here { padding: 2px 6px 4px; color: #ffe7a0; font: 600 14px -apple-system, Arial, sans-serif; }
+#locator .here::before { content: 'YOU ARE HERE  '; color: #8b8b8b; font-size: 11px; letter-spacing: 1.2px; }
+#locator svg { width: 100%; height: auto; display: block; stroke: none; }
+#locator .wire { stroke: #4a4a4a; stroke-width: 1.5; }
+#locator .node .shape, #locator .node .rim { fill: #2d2d2d; stroke: #555; stroke-width: 1.2; }
+#locator .node .name { fill: #9a9a9a; font: 600 10.5px -apple-system, Arial, sans-serif; }
+#locator .node.here .shape, #locator .node.here .rim { fill: #3a3000; stroke: var(--focus-bar); stroke-width: 2; }
+#locator .node.here .name { fill: #ffe7a0; }
+#locator .state { display: none; }

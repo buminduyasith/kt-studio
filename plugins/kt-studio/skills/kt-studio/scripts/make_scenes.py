@@ -1,6 +1,7 @@
 """Writes the voice files for the recorder from the approved storyboard, so the narration is exactly
 the storyboard's words: 3-scripts/ui.scenes.json (part A) and 3-scripts/code.scenes.json (part B),
-and 3-scripts/diagrams.json when the storyboard has sequence diagrams.
+3-scripts/diagrams.json when the storyboard has sequence diagrams, and 3-scripts/maps.json when it has
+system maps.
 
 Each entry: { "scene", "text" (spoken: the pronounce map applied), "caption" (on-screen spelling, only
 when it differs) }. An "overlay" already in the file is kept, so it can be added by hand once.
@@ -67,6 +68,12 @@ def main() -> None:
         out = run / "3-scripts" / "diagrams.json"
         out.write_text(json.dumps(board["diagrams"], indent=2, ensure_ascii=False) + "\n")
         print(f"{out}: {len(board['diagrams'])} diagrams")
+
+    # System maps for the code tour (build_tour.mjs reads maps.json next to tour.json).
+    if board.get("maps"):
+        out = run / "3-scripts" / "maps.json"
+        out.write_text(json.dumps(board["maps"], indent=2, ensure_ascii=False) + "\n")
+        print(f"{out}: {len(board['maps'])} maps")
 
 
 if __name__ == "__main__":

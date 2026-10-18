@@ -315,6 +315,72 @@ class Sources(Tmp):
         self.assertIn("docs/", got["in_project"])
 
 
+class Maps(Tmp):
+    """The system map scenes: the build checks a map and its scenes, and make_scenes hands it to the tour."""
+
+    def board(self, **extra) -> dict:
+        m = {"title": "Refund", "nodes": [
+            {"id": "shop", "label": "Shop", "kind": "app", "col": 0, "row": 0},
+            {"id": "api", "label": "Orders API", "col": 1, "row": 0},
+            {"id": "db", "label": "Postgres", "kind": "database", "col": 1, "row": 1},
+            {"id": "pay", "label": "Payment provider", "kind": "external", "col": 2, "row": 0}],
+            "groups": [{"label": "Acme", "nodes": ["shop", "api", "db"]}],
+            "steps": [{"from": "shop", "to": "api", "label": "POST /refunds", "payload": "{ order: 1042 }"},
+                      {"from": "api", "to": "db", "label": "saves", "kind": "write", "state": {"node": "db", "text": "PENDING"}},
+                      {"from": "api", "to": ["pay", "db"], "label": "refund.created", "kind": "event"}]}
+        scenes = [{"id": "B1-01", "title": "Map", "voice": "The shop, the Orders API and the database.", "kind": "map",
+                   "status": "ready", "map": {"use": "refund", "reveal": ["shop", "api", "db"]}},
+                  {"id": "B1-02", "title": "Journey", "voice": "The shop sends the refund.", "kind": "map",
+                   "status": "ready", "map": {"use": "refund", "steps": [1, 3]}},
+                  {"id": "B2-01", "title": "Code", "voice": "The route.", "kind": "code", "status": "ready",
+                   "code": {"repo": "api", "file": "src/a.ts", "lines": "1-5"}, "where": {"map": "refund", "node": "api"}}]
+        data = {"meta": {"feature": "Refunds"}, "brief": {"readAs": []},
+                "overview": {k: [] for k in ("what", "explain", "repos", "notCovered", "set", "writes", "questions")},
+                "parts": [{"id": "B", "title": "How it works", "chapters": [{"id": "B1", "title": "Map", "scenes": scenes}]}],
+                "production": {"pace": [], "pronounce": [], "deliver": []}, "review": [], "maps": {"refund": m}}
+        data.update(extra)
+        return data
+
+    def test_a_good_map_has_no_problems(self):
+        import build_storyboard
+        self.assertEqual(build_storyboard.problems(self.board(), self.dir), [])
+
+    def test_bad_maps_and_scenes_are_named(self):
+        import build_storyboard
+        data = self.board()
+        m = data["maps"]["refund"]
+        m["nodes"].append({"id": "mail", "label": "Mail", "col": 0, "row": 1})   # inside the Acme box, not in it
+        m["steps"].append({"from": "api", "to": "nowhere", "label": "x", "kind": "teleport"})
+        data["parts"][0]["chapters"][0]["scenes"][1]["map"] = {"use": "refund", "steps": [2, 9]}
+        data["parts"][0]["chapters"][0]["scenes"][2]["where"] = {"map": "refund", "node": "ghost"}
+        found = "\n".join(build_storyboard.problems(data, self.dir))
+        self.assertIn("would draw its box around mail", found)
+        self.assertIn("'nowhere' is not one of its nodes", found)
+        self.assertIn("kind must be one of", found)
+        self.assertIn("B1-02: map.steps must be", found)
+        self.assertIn("B2-01: where must be", found)
+
+    def test_a_map_scene_must_do_something(self):
+        import build_storyboard
+        data = self.board()
+        data["parts"][0]["chapters"][0]["scenes"][0]["map"] = {"use": "refund"}
+        self.assertIn("B1-01: a map scene does something", "\n".join(build_storyboard.problems(data, self.dir)))
+
+    def test_make_scenes_writes_maps_json(self):
+        board = self.write("run/2-storyboard/storyboard.json", json.dumps(self.board()))
+        (board.parent.parent / "3-scripts").mkdir()
+        run("python3", SCRIPTS / "make_scenes.py", board.parent.parent)
+        maps = json.loads((board.parent.parent / "3-scripts" / "maps.json").read_text())
+        self.assertEqual(maps["refund"]["steps"][2]["to"], ["pay", "db"])
+
+    def test_the_tour_page_loads_the_map(self):
+        studio = SKILL / "assets" / "studio"
+        html = (studio / "ide" / "ide.html").read_text()
+        self.assertIn('src="map.js"', html)
+        self.assertIn('href="map.css"', html)
+        self.assertIn("'map.css', 'map.js'", (studio / "tools" / "build_tour.mjs").read_text())
+
+
 class LoginSafety(Tmp):
     def test_forget_deletes_only_what_kt_studio_made(self):
         team = self.dir / ".auth-team"

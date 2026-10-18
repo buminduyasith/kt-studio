@@ -18,8 +18,10 @@ Each video has two parts:
 
 - **Part A, how to use it:** your real app in a browser. The mouse moves, types and clicks, and the
   voice explains each step. Every click happens on the word that names it.
-- **Part B, how it works:** a tour of the code in a VS Code style editor. A diagram shows the big
-  picture first, then it opens the real files and explains them one idea at a time.
+- **Part B, how it works:** first the big picture, in motion. The parts of your system appear one by
+  one with their jobs, then your example request travels between them: what is sent, what is saved,
+  what happens when it fails. Then it zooms into each part and opens the real files in a VS Code style
+  editor, one idea at a time, with a small map in the corner that says where you are.
 
 You also get subtitles and chapters. The voice is made **on your computer**, so your code and
 narration are never sent to a voice service.
@@ -126,7 +128,7 @@ the finished videos.
 | Step | What it does |
 |---|---|
 | Check | Makes sure the tools and settings are ready (under a second) |
-| Research | Reads your docs and code, and follows the feature from the button a user clicks to the data that is saved. Every fact points to a file and line |
+| Research | Follows the feature from the button a user clicks to the data that is saved. Docs and comments are only leads: every fact is checked in the current code (or seen running) and points to a file and line, and stale docs are flagged, never repeated |
 | Storyboard | Shows you every scene and every spoken line. **You approve it first** |
 | Rehearse | Makes the voice and does a practice run where nothing can be saved or changed |
 | Record | If the recording would save or change data in a shared system, it asks you first. Then it records |

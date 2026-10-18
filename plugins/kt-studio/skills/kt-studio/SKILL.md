@@ -122,16 +122,21 @@ When it prints `needs a download (...)` (exit 3), it changed nothing: stop and t
 
 ## 2. Research the feature
 
-Follow `references/research.md`. It works for any language and stack:
+Follow `references/research.md`. It works for any language and stack. **The code at each repo's ref
+is the only source of truth**: docs, comments, names, tickets and your own notes are leads, never facts.
 
-- Read what people wrote first: the sources the person picked (`python3 <skill>/scripts/sources.py <root>
-  <feature-slug> --run <run>` lists them: folders, links, connected tools), then READMEs, API contracts,
-  tests and history. Then
+- Write two or three hypotheses, then read what people wrote, as leads: the sources the person picked
+  (`python3 <skill>/scripts/sources.py <root> <feature-slug> --run <run>` lists them: folders, links,
+  connected tools), READMEs, API contracts, tests and history. Check every doc for staleness. Then
   search every repo at its ref by every name the feature goes by.
-- Map the layers (screens, client calls, server entry, rules, data, side effects, settings, tests)
-  and trace the main flow hop by hop from the button the user clicks to what is stored and back.
-- Pull out the rules with their numbers, the states, who may do what, what goes wrong, the traps.
-- Read every file you will cite at its repo's ref: `git -C <repo> show <ref>:./<path> | cat -n`.
+- Map the layers and trace the main flow hop by hop from the button the user clicks to what is stored
+  and back. Prove each hop is live (where it is wired, one real caller, the flags for the run's
+  environment), find both ends of every hop between services, and look for what would prove you wrong.
+  Run the tests on the path, or the code locally, when the project allows it.
+- Map the system for the map scenes: the parts, how they talk, the journey with its real data, the
+  states, the boundaries, the failure that matters, and why it is built this way.
+- Grade every fact `RUN`, `CODE`, `DOC-ONLY`, `CONFLICT` or `UNKNOWN`; only `RUN` and `CODE` are said
+  in the video. Read every file you will cite at its repo's ref: `git -C <repo> show <ref>:./<path> | cat -n`.
 - Write `<run>/1-research/brief.md` with the template in `references/research.md`.
 - **Ask, round 2** (`references/questions.md`): now the research knows the feature, ask what only the
   person can decide, with answers taken from the code: the depth (`choices.py ask ... --keys depth
@@ -188,7 +193,9 @@ and keep their real output for the storyboard (`references/storyboard.md`).
 ## 4. Storyboard and review (gate 1)
 
 - Plan the video for its audience with `references/kt-design.md`: the story shape, one example all
-  the way through, a sequence diagram for the big picture, one idea per scene.
+  the way through, and in Part B the map before the code: the parts build up, the high-level design,
+  the journey in motion, then a zoom into each part's code with the small map in the corner. One idea
+  per scene.
 - Write `<run>/2-storyboard/storyboard.json` exactly as in `references/storyboard.md`, then go
   through the checklist at the end of `references/kt-design.md` before the user sees it.
 - Build: `python3 <skill>/scripts/build_storyboard.py <run>/2-storyboard`, then look at it yourself:
@@ -326,8 +333,8 @@ process you started yourself for this run (an app server from "Before the run": 
 | `references/init.md` | The request is `init`, or the doctor finds no settings, or settings to move into `.kt-studio/` |
 | `references/config.md` | Reading `<config>` or `<instructions>`, finding the apps for a run, services and addresses, logging in |
 | `references/questions.md` | Asking the two rounds of questions, saving the answers, and what the answers teach the next video |
-| `references/research.md` | Researching the feature in any codebase, and writing the brief |
-| `references/kt-design.md` | Planning the video for its audience: story shape, scene patterns, voice lines |
+| `references/research.md` | Researching the feature in any codebase: verifying every fact, mapping the system, and writing the brief |
+| `references/kt-design.md` | Planning the video for its audience: how people learn from video, story shape, motion on the map, scene patterns, voice lines |
 | `references/storyboard.md` | Writing `storyboard.json` |
 | `references/review-loop.md` | Publishing the storyboard and handling comments |
 | `references/ui-recording.md` | Writing the Part A script |

@@ -36,6 +36,16 @@ declare global {
       terminalHide(): void;
       terminalClear(): void;
       terminalRun(scene: string, msPerChar?: number, msPerLine?: number): Promise<void>;
+      map(name: string, options?: { all?: boolean }): void;
+      mapReveal(ids: string[], gap?: number): Promise<void>;
+      mapStep(step: number, ms?: number): Promise<void>;
+      mapReplay(ms?: number): Promise<void>;
+      mapOverview(): Promise<void>;
+      mapFocus(ids: string[] | null): void;
+      mapZoom(id: string): Promise<void>;
+      hideMap(): void;
+      locate(name: string, id: string): void;
+      hideLocator(): void;
     };
   }
 }
@@ -188,6 +198,54 @@ export async function diagramOn(cue: SceneCue, page: Page, name: string, steps: 
   }
   await cue.end();
 }
+
+/**
+ * A map scene (storyboard kind "map"): the system map (map.js), driven on the narrator's words. Use the
+ * same plan as the scene's storyboard `map`:
+ * - reveal: groups of node ids, each brought in on its word (a group with no word comes in at once);
+ * - overview: every node and link at once, still (the high-level design);
+ * - steps: [first, last] of the map's steps, each played on its word in `words`, else right after the one
+ *   before (a step takes about 1.3 s: the link draws, then the message travels);
+ * - replay: the whole journey again, quickly (the recap).
+ * The map stays up for the next map scene; opening a file or a title hides it.
+ *   mapOn(await sync.say('B1-01'), page, 'refund', { reveal: [[['agent', 'shop'], 'shop'], [['api', 'db'], 'orders']] })
+ *   mapOn(await sync.say('B1-02'), page, 'refund', { steps: [2, 3], words: ['sends', 'saves'] })
+ */
+export async function mapOn(
+  cue: SceneCue,
+  page: Page,
+  name: string,
+  plan: { reveal?: [string[], Cue | null][]; overview?: boolean; steps?: [number, number?]; words?: (Cue | null)[]; replay?: boolean; ms?: number } = {},
+) {
+  await page.evaluate((n) => window.ide.map(n), name);
+  for (const [ids, word] of plan.reveal ?? []) {
+    if (word) await cue.at(word);
+    await page.evaluate((list) => window.ide.mapReveal(list), ids);
+  }
+  if (plan.overview) await page.evaluate(() => window.ide.mapOverview());
+  if (plan.steps) {
+    const [first, last = first] = plan.steps;
+    for (let step = first, i = 0; step <= last; step++, i++) {
+      const word = plan.words?.[i];
+      if (word) await cue.at(word);
+      await page.evaluate(({ k, ms }) => window.ide.mapStep(k, ms), { k: step, ms: plan.ms ?? 900 });
+    }
+  }
+  if (plan.replay) await page.evaluate(() => window.ide.mapReplay());
+  await cue.end();
+}
+
+/** Zooms into one node of the map on screen (on `word` when given), right before its code opens. */
+export async function zoomInto(page: Page, node: string, cue?: SceneCue, word?: Cue) {
+  if (cue && word) await cue.at(word);
+  await page.evaluate((id) => window.ide.mapZoom(id), node);
+}
+
+/** "You are here": the map, small, in the corner of the code, with `node` lit. Call it after opening the file. */
+export const locate = (page: Page, map: string, node: string) =>
+  page.evaluate(({ map, node }) => window.ide.locate(map, node), { map, node });
+
+export const hideLocator = (page: Page) => page.evaluate(() => window.ide.hideLocator());
 
 /** `explain()` for a scene started with sync.say(): `explainOn(await sync.say('B2-02'), page, [[16, 18]], note)`. */
 export async function explainOn(cue: SceneCue, page: Page, ranges: Ranges, note?: string) {

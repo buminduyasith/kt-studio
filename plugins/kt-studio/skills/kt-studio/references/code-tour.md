@@ -27,7 +27,8 @@ Each repo's `ref` is the sha from the storyboard's `meta.sources` (SKILL.md step
 Repo paths: absolute paths are simplest. A relative path is resolved from the folder of `tour.json`
 (`<run>/3-scripts/`), not from the project root.
 `scripts/stage.sh` builds it into `<out>/runtime/tours/<run-id>/` (real code from git, VS Code colours),
-with the storyboard's diagrams from `3-scripts/diagrams.json` (written by `make_scenes.py`).
+with the storyboard's diagrams from `3-scripts/diagrams.json` and its maps from `3-scripts/maps.json`
+(both written by `make_scenes.py`).
 
 The explorer shows every folder on the way to a tour file. Of the files, only tour files show; the
 rest fold into one row `+ N more files`.
@@ -46,6 +47,8 @@ rest fold into one row `+ N more files`.
 | `tip(rowId, text)` / `clearTips()` | Small label next to an explorer row (`rowId` = `repo:path`, `repo:` for the root) |
 | `terminalRun(sceneId)` / `terminalShow(cwd)` / `terminalHide()` / `terminalClear()` | A VS Code style terminal panel under the editor: types the scene's command and prints its recorded output (from `3-scripts/terminals.json`, written by `make_scenes.py`), lighting its `marks`. The code above stays visible |
 | `sequence(name)` / `sequenceStep(first, last)` / `hideSequence()` | The storyboard's sequence diagram over the editor; lights steps, earlier ones stay, later ones hidden. Opening a file hides it |
+| `map(name)` / `mapReveal(ids)` / `mapStep(n, ms)` / `mapOverview()` / `mapReplay()` / `mapFocus(ids)` / `mapZoom(id)` / `hideMap()` | The storyboard's system map over the editor (`ide/map.js`): parts come in, a message travels along a step's link (about 1.3 s: the link draws, then the message moves), the still overview, the quick replay, everything but some parts dimmed, a zoom into one part. Every animation has a fixed length and is awaited. Opening a file, a title or a sequence diagram hides it |
+| `locate(name, id)` / `hideLocator()` | The same map, small, in the bottom-right corner of the code, with one part lit: "you are here" |
 
 Browse it by hand: `http://127.0.0.1:8765/ide.html?view`. When port 8765 is busy, serve on another
 (`serve.sh start <dir> 8766`) and set `KT_TOUR_URL=http://127.0.0.1:8766/ide.html` for the code take.
@@ -55,7 +58,7 @@ Browse it by hand: `http://127.0.0.1:8765/ide.html?view`. When port 8765 is busy
 ```ts
 import path from 'node:path';
 import { test, createHumanCursor } from '@argo-video/cli';
-import { openTour, flow, welcome, walkOn, quickOpen, quickOpenOn, follow, explain, focus, diagramOn } from '../lib/ide-driver';
+import { openTour, flow, welcome, walkOn, quickOpen, quickOpenOn, follow, explain, focus, mapOn, zoomInto, locate } from '../lib/ide-driver';
 import { createSync } from '../lib/sync';
 
 test(path.basename(__filename, '.demo.ts'), async ({ page, narration }) => {
@@ -72,17 +75,27 @@ test(path.basename(__filename, '.demo.ts'), async ({ page, narration }) => {
   let s = await sync.say('B1-01');                               // intro on the welcome screen
   await s.end();
 
-  // The big picture: the storyboard's "refund" diagram, steps lit on their words.
-  await diagramOn(await sync.say('B1-02'), page, 'refund', [1, 3], [null, 'server', 'provider']);
+  // The map: the parts come in as the voice names them, then the still high-level design.
+  await mapOn(await sync.say('B1-02'), page, 'refund', {
+    reveal: [[['agent', 'shop'], 'shop'], [['api', 'db'], 'orders'], [['topic'], 'topic'], [['pay'], 'provider']],
+  });
+  await mapOn(await sync.say('B1-03'), page, 'refund', { overview: true });
+  // The journey: the same order as Part A travels, each step on its verb.
+  await mapOn(await sync.say('B1-04'), page, 'refund', { steps: [2, 3], words: ['sends', 'saves'] });
 
-  // "In the web app, open src, then refunds." Each folder opens as its name is spoken.
+  // Into the code: "Inside the shop, open src, then refunds." The map zooms into the Shop on "inside",
+  // then each folder opens as its name is spoken, and the corner map lights the Shop.
   await flow(page, 'REFUND', 'web');
-  await walkOn(page, cursor, await sync.say('B2-01'), 'web', 'src/refunds/use-refund.ts');
+  s = await sync.say('B2-01');
+  await zoomInto(page, 'shop', s, 'inside');
+  await walkOn(page, cursor, s, 'web', 'src/refunds/use-refund.ts');
+  await locate(page, 'refund', 'shop');
   await explain(page, narration, 'B2-02', [[40, 52]], 'Sends the order id and the amount. <b>Never the card.</b>');
 
   // "Checks the order..." starts with its subject: the file opens before the line.
   await flow(page, 'REFUND', 'api');
   await quickOpen(page, 'refund.service');
+  await locate(page, 'refund', 'api');                           // the scene's `where`
   await explain(page, narration, 'B2-03', [[18, 30]], 'Checks the order belongs to this shop.');
 
   s = await sync.say('B2-04');                                   // the voice describes the jump while it happens
@@ -110,6 +123,9 @@ test(path.basename(__filename, '.demo.ts'), async ({ page, narration }) => {
 | `terminalOn(s, page, sceneId, word?)` | A `terminal` scene: types the command (on `word` when given) and prints the output, then waits for the voice. `terminalHide(page)` closes the panel |
 | `terminalClear(page)` / `unfocus(page)` | Empty the terminal (at a new chapter, so old commands do not crowd the new one) / clear the highlight and note |
 | `diagramOn(s, page, name, [first, last], words?)` | A `diagram` scene: shows the diagram and lights its steps `first` to `last` (the storyboard's `diagram.steps`) one by one, each on its word when given |
+| `mapOn(s, page, name, plan)` | A `map` scene, the same plan as its storyboard `map`: `reveal: [[ids, word], ...]` (each group comes in on its word), `overview: true`, `steps: [first, last]` with `words` (each step starts on its verb), `replay: true` |
+| `zoomInto(page, node, s?, word?)` | Zooms into one part of the map on screen (on `word` when given), right before its code opens |
+| `locate(page, map, node)` / `hideLocator(page)` | The corner map for a code scene with `where`; call it right after the file opens. It stays until the next `locate`, a title or `hideLocator` |
 
 A `title` scene in Part B (the opening, a chapter opener, the recap) is the welcome screen:
 `await welcome(page, 'Three things to remember', '1. ...<br>2. ...'); s = await sync.say('B3-01'); await s.end();`
@@ -134,6 +150,9 @@ Rules:
   the member owes too much"); put those words in `marks`. Open the file that explains the answer in the
   next scene: the terminal stays open under it, so the output and its code are on screen together.
   Close it (`terminalHide`) before a scene that needs the whole editor.
+- Map scenes: start each step on its verb in the line ("sends", "saves", "publishes"); bring a part in
+  on its name. One map scene plays at most three or four steps. Use the same map from the first scene
+  to the recap, and `locate` it on every code scene that has `where`.
 - Hide the cursor right after creating it. Walks and jumps show it while they move and hide it after;
   an idle pointer resting on the code pulls the eye away from the highlight.
 

@@ -66,7 +66,10 @@ const diagrams = tour.diagrams ?? (existsSync(diagramsFile) ? JSON.parse(readFil
 // Terminal scenes (command and recorded output per scene id), also written by make_scenes.py.
 const terminalsFile = path.join(path.dirname(path.resolve(tourPath)), 'terminals.json');
 const terminals = tour.terminals ?? (existsSync(terminalsFile) ? JSON.parse(readFileSync(terminalsFile, 'utf8')) : {});
-const data = { title: tour.title ?? 'Code tour', workspace: tour.workspace ?? 'WORKSPACE', repos: {}, files: {}, diagrams, terminals };
+// System maps (services, how they talk, a request travelling between them), also written by make_scenes.py.
+const mapsFile = path.join(path.dirname(path.resolve(tourPath)), 'maps.json');
+const maps = tour.maps ?? (existsSync(mapsFile) ? JSON.parse(readFileSync(mapsFile, 'utf8')) : {});
+const data = { title: tour.title ?? 'Code tour', workspace: tour.workspace ?? 'WORKSPACE', repos: {}, files: {}, diagrams, terminals, maps };
 for (const [key, entry] of Object.entries(tour.repos)) {
   // Repo paths may be relative to tour.json.
   const repo = { ...entry, path: path.resolve(path.dirname(path.resolve(tourPath)), entry.path) };
@@ -102,8 +105,9 @@ for (const [key, entry] of Object.entries(tour.repos)) {
 }
 
 mkdirSync(outDir, { recursive: true });
-for (const asset of ['ide.html', 'ide.css', 'ide.js']) copyFileSync(path.join(here, '..', 'ide', asset), path.join(outDir, asset));
+for (const asset of ['ide.html', 'ide.css', 'ide.js', 'map.css', 'map.js']) copyFileSync(path.join(here, '..', 'ide', asset), path.join(outDir, asset));
 writeFileSync(path.join(outDir, 'data.js'), `window.TOUR = ${JSON.stringify(data)};\n`);
 console.log(Object.entries(data.files).map(([k, v]) => `${k} (${v.lines.length} lines)`).join('\n'));
 if (Object.keys(diagrams).length) console.log(`diagrams: ${Object.keys(diagrams).join(', ')}`);
+if (Object.keys(maps).length) console.log(`maps: ${Object.keys(maps).join(', ')}`);
 if (Object.keys(terminals).length) console.log(`terminal scenes: ${Object.keys(terminals).join(', ')}`);
