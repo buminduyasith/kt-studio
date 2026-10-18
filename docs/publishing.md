@@ -231,9 +231,10 @@ broken mid-run. After the update, `/kt-studio:doctor` refreshes each project's r
 
 ## 10. Share it more widely
 
-- **Your team:** add the marketplace to a project's `.claude/settings.json` with
-  `claude plugin marketplace add buminduyasith/kt-studio --scope project`. Everyone who opens that
-  project is offered the plugin.
+- **Your team:** in the project, run `claude plugin marketplace add buminduyasith/kt-studio --scope project`
+  and `claude plugin install kt-studio@kt-studio --scope project`, and commit `.claude/settings.json`.
+  That turns the plugin on for everyone who trusts the folder, but does not download it: each
+  teammate runs the same `install` command once, then `/kt-studio:init`.
 - **The community catalog:** once the repo is public and stable, you can submit it to Anthropic's
   community marketplace. See the Claude Code docs on plugin marketplaces for the current process.
 

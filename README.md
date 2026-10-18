@@ -39,8 +39,9 @@ This always installs the **newest release**. To check which version you have, ru
 `claude plugin list`. To update later, see [Versions and updates](#versions-and-updates).
 
 **For your whole team.** Commit this as `.claude/settings.json` in your project (or merge it into the
-one you have). Everyone who opens the project in Claude Code and trusts the folder gets the plugin,
-with nothing to install by hand. To stay on one release, add `"ref": "<tag>"` next to `"repo"`.
+one you have). It turns KT Studio on for everyone who opens the project in Claude Code and trusts the
+folder, but it does not download it to their computer. To stay on one release, add `"ref": "<tag>"`
+next to `"repo"`.
 
 ```json
 {
@@ -54,6 +55,16 @@ with nothing to install by hand. To stay on one release, add `"ref": "<tag>"` ne
   }
 }
 ```
+
+Each teammate then installs it once, in a terminal in the project folder (until they do, `/plugin`
+shows that KT Studio is enabled in the project settings but not installed):
+
+```bash
+claude plugin install kt-studio@kt-studio --scope project
+```
+
+Then they run `/kt-studio:init` once on their computer. It downloads the recorder and the voice, and
+finds the settings you already committed in `.kt-studio/`.
 
 You need macOS or Linux, Node.js 20+, Python 3.9+, git, curl, ffmpeg and about 1 GB of free disk space.
 You don't have to check this yourself: the first step below checks everything and tells you what is
