@@ -104,7 +104,7 @@ ul.plain { margin: 0; padding-left: 18px; display: grid; gap: 6px; }
 .pic img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .slate { position: absolute; left: 10px; top: 10px; display: flex; gap: 6px; pointer-events: none; }
 .slate span { font: 700 14px/1 var(--display); letter-spacing: .06em; background: rgba(8, 12, 16, .82); color: #fff; padding: 6px 8px; border-radius: 4px; }
-.slate .kind-ui { box-shadow: inset 0 -3px 0 #2fb3a6; } .slate .kind-code, .slate .kind-nav { box-shadow: inset 0 -3px 0 #8b92ff; } .slate .kind-title { box-shadow: inset 0 -3px 0 #c9ced6; } .slate .kind-diagram, .slate .kind-map { box-shadow: inset 0 -3px 0 #ffc400; } .slate .kind-terminal { box-shadow: inset 0 -3px 0 #23d18b; }
+.slate .kind-ui { box-shadow: inset 0 -3px 0 #2fb3a6; } .slate .kind-code, .slate .kind-nav { box-shadow: inset 0 -3px 0 #8b92ff; } .slate .kind-title { box-shadow: inset 0 -3px 0 #c9ced6; } .slate .kind-diagram, .slate .kind-map, .slate .kind-intro, .slate .kind-outro { box-shadow: inset 0 -3px 0 #ffc400; } .slate .kind-terminal { box-shadow: inset 0 -3px 0 #23d18b; }
 .card.term .out { flex: 1; overflow: hidden; padding: 10px 12px; font: 10.5px/1.45 var(--mono); white-space: pre-wrap; word-break: break-all; color: #cccccc; }
 .card.term .out .p { color: #23d18b; } .card.term .out mark { background: rgba(255, 196, 0, .25); color: #ffd866; }
 .dur { pointer-events: none; position: absolute; right: 10px; bottom: 10px; font: 500 12px/1 var(--mono); background: rgba(8, 12, 16, .82); color: #fff; padding: 5px 7px; border-radius: 4px; font-variant-numeric: tabular-nums; }
@@ -146,6 +146,15 @@ ul.plain { margin: 0; padding-left: 18px; display: grid; gap: 6px; }
 .card.title .t { font: 700 clamp(20px, 3vw, 28px)/1.1 var(--display); color: #f2f2f2; letter-spacing: .02em; }
 .card.title .s { font: 13px/1.4 var(--body); color: #a9b1bd; margin-top: 6px; }
 .card.diagram svg, .card.map svg { width: 100%; height: 100%; display: block; }
+.card.kt { padding: 44px 26px 14px; background: radial-gradient(circle at 18% 12%, #23262d 0%, #17181b 60%, #111214 100%); color: #e8e8e8; display: flex; flex-direction: column; gap: 6px; overflow: hidden; }
+.card.kt .eb { font: 700 9px var(--body); letter-spacing: 2px; color: #ffc400; }
+.card.kt .tt { font: 700 22px/1.1 var(--body); color: #fff; border-left: 3px solid #ffc400; padding-left: 8px; }
+.card.kt .tg { font-size: 11px; color: #b8bcc4; }
+.card.kt .cols { display: grid; grid-template-columns: 1.4fr 1fr; gap: 14px; margin-top: 4px; flex: 1; }
+.card.kt .hd { font: 700 8px var(--body); letter-spacing: 1.5px; color: #8a8f99; margin-bottom: 3px; }
+.card.kt ol { margin: 0; padding-left: 16px; font-size: 11px; line-height: 1.4; } .card.kt ol.sm { font-size: 9.5px; color: #cfd2d8; }
+.card.kt code { font: 9px var(--mono); color: #9fd3c7; }
+.card.kt .ft { border-top: 1px solid #30333b; padding-top: 5px; font-size: 10px; color: #9aa0aa; } .card.kt .ft b { color: #e8e8e8; }
 .card.map .mt { fill: #8b8b8b; font: 700 10px var(--body); letter-spacing: 1px; }
 .card.map .grp rect { fill: rgba(255,255,255,.03); stroke: #4a4a52; stroke-dasharray: 4 4; } .card.map .grp text { fill: #8a8a94; font: 700 9px var(--body); letter-spacing: 1px; }
 .card.map .nd rect { fill: #252526; stroke: #4a4a4a; } .card.map .nd text { fill: #e6e6e6; font: 600 11px var(--body); }
@@ -219,7 +228,7 @@ footer { margin-top: 48px; padding-top: 14px; border-top: 1px solid var(--line);
     .replace(/\b((?:variables|secrets):)/g, '<code>$1</code>')
     .replace(/\*\*([^*]+)\*\*/g, '<b>$1</b>');
   const mmss = (sec) => `${Math.floor(sec / 60)}:${String(Math.round(sec % 60)).padStart(2, '0')}`;
-  const KIND = { ui: 'Screen', code: 'Code', nav: 'Folders', title: 'Title', diagram: 'Diagram', terminal: 'Terminal', map: 'Map' };
+  const KIND = { ui: 'Screen', code: 'Code', nav: 'Folders', title: 'Title', diagram: 'Diagram', terminal: 'Terminal', map: 'Map', intro: 'Intro', outro: 'Outro' };
 
   const scenesOf = (part) => part.chapters.flatMap((c) => c.scenes);
   const total = D.parts.reduce((t, p) => t + scenesOf(p).reduce((a, s) => a + s.seconds, 0), 0);
@@ -302,8 +311,30 @@ footer { margin-top: 48px; padding-top: 14px; border-top: 1px solid var(--line);
     return `<div class="card map"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Map ${esc(s.map.use)}, ${esc(what)}">${out}</svg></div>`;
   };
 
+  // The intro and outro cards, small: the same blocks the video shows, in the same places.
+  const credit = (list) => (list || []).filter((n) => n && n !== 'none').join(', ');
+  const introCard = () => {
+    const c = D.intro || {};
+    const agenda = c.agenda || D.parts.flatMap((p) => p.chapters).filter((ch) => !ch.scenes.every((x) => x.kind === 'intro' || x.kind === 'outro')).map((ch) => ch.title);
+    return `<div class="card kt"><div class="eb">KNOWLEDGE TRANSFER${c.audience ? ' · ' + esc(c.audience.toUpperCase()) : ''}</div>`
+      + `<div class="tt">${esc(c.title || m.feature)}</div>${c.tagline ? `<div class="tg">${esc(c.tagline)}</div>` : ''}`
+      + `<div class="cols"><div><div class="hd">YOU WILL LEARN</div><ol>${(c.learn || []).map((l) => `<li>${esc(l)}</li>`).join('')}</ol></div>`
+      + `<div><div class="hd">IN THIS VIDEO</div><ol class="sm">${agenda.map((a) => `<li>${esc(a)}</li>`).join('')}</ol></div></div>`
+      + `<div class="ft">${credit(c.builtBy) ? `Built by <b>${esc(credit(c.builtBy))}</b>` : 'No names shown'}</div></div>`;
+  };
+  const outroCard = () => {
+    const c = D.outro || {};
+    const who = credit(c.builtBy || (D.intro || {}).builtBy);
+    return `<div class="card kt"><div class="eb">WRAP-UP</div><div class="tt">${esc(c.title || 'Three things to remember')}</div>`
+      + `<div class="cols"><div><ol>${(c.remember || []).map((r) => `<li>${esc(r)}</li>`).join('')}</ol></div>`
+      + `<div><div class="hd">NEXT STEPS</div><ol class="sm">${(c.next || []).map((n) => `<li>${esc(n.label)}${n.detail ? ` <code>${esc(n.detail)}</code>` : ''}</li>`).join('')}</ol></div></div>`
+      + `<div class="ft">${c.ask && c.ask !== 'none' ? `Questions? <b>${esc(c.ask)}</b>` : ''}${who ? ` · Built by <b>${esc(who)}</b>` : ''}</div></div>`;
+  };
+
   // Code, folder and title scenes are drawn from data: file and method are enough to review them.
   const card = (s) => {
+    if (s.kind === 'intro') return introCard();
+    if (s.kind === 'outro') return outroCard();
     if (s.kind === 'diagram') return diagram(s);
     if (s.kind === 'map') return sysmap(s);
     if (s.kind === 'terminal') {

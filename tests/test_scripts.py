@@ -381,6 +381,103 @@ class Maps(Tmp):
         self.assertIn("'map.css', 'map.js'", (studio / "tools" / "build_tour.mjs").read_text())
 
 
+class IntroOutro(Tmp):
+    """The intro opens the video and the outro closes it; who built it comes from git, names only."""
+
+    def board(self, **extra) -> dict:
+        data = Maps.board(self)  # the map storyboard, without inheriting the map tests
+        scenes = data["parts"][0]["chapters"][0]["scenes"]
+        scenes.insert(0, {"id": "B1-00", "title": "Intro", "voice": "This video shows how a refund works.",
+                          "kind": "intro", "status": "ready"})
+        scenes.append({"id": "B1-99", "title": "Outro", "voice": "Three things to remember.", "kind": "outro",
+                       "status": "ready"})
+        data["meta"].update({"date": "2026-10-19", "sources": [{"repo": "api", "ref": "origin/main", "sha": "1a2b3c4d5e"}]})
+        data["intro"] = {"tagline": "How a refund works.", "learn": ["Refund an order", "Where the rules live"],
+                         "builtBy": ["Orders API team"], "audience": "New developers"}
+        data["outro"] = {"remember": ["Saved first, sent later"], "next": [{"label": "Run the tests", "detail": "npm test"}],
+                         "ask": "The Orders API team"}
+        data.update(extra)
+        return data
+
+    def test_a_good_intro_and_outro(self):
+        import build_storyboard
+        self.assertEqual(build_storyboard.problems(self.board(), self.dir), [])
+
+    def test_the_intro_comes_first_and_the_outro_last(self):
+        import build_storyboard
+        data = self.board()
+        scenes = data["parts"][0]["chapters"][0]["scenes"]
+        scenes[0], scenes[1] = scenes[1], scenes[0]
+        data["outro"]["remember"] = []
+        data["intro"]["builtBy"] = "Orders API team"
+        found = "\n".join(build_storyboard.problems(data, self.dir))
+        self.assertIn("B1-00: the intro must be the first scene", found)
+        self.assertIn("outro.remember must list 1 to 4", found)
+        self.assertIn("intro.builtBy must be a list", found)
+
+    def test_make_scenes_fills_the_cards(self):
+        board = self.write("run/2-storyboard/storyboard.json", json.dumps(self.board()))
+        (board.parent.parent / "3-scripts").mkdir()
+        run("python3", SCRIPTS / "make_scenes.py", board.parent.parent)
+        cards = json.loads((board.parent.parent / "3-scripts" / "cards.json").read_text())
+        self.assertEqual(cards["intro"]["title"], "Refunds")
+        self.assertEqual(cards["intro"]["agenda"], ["Map"])
+        self.assertRegex(cards["intro"]["length"], r"^About \d+ minutes?$")
+        self.assertEqual(cards["intro"]["code"], "Code: api main @ 1a2b3c4d · 2026-10-19")
+        self.assertEqual(cards["outro"]["builtBy"], ["Orders API team"])
+
+    def test_stage_puts_the_cards_next_to_the_demo(self):
+        out = self.dir / ".kt-studio"
+        (out / "runtime" / "demos").mkdir(parents=True)
+        scripts = self.write("run/2026-10-19-refunds/3-scripts/ui.demo.ts", "// demo\n").parent
+        (scripts / "ui.scenes.json").write_text("[]")
+        (scripts / "cards.json").write_text('{"intro": {"title": "Refunds"}}')
+        run("bash", SCRIPTS / "stage.sh", out, scripts.parent)
+        self.assertTrue((out / "runtime" / "demos" / "2026-10-19-refunds-cards.json").is_file())
+
+    def test_the_card_renderer_runs(self):
+        cards_ts = SKILL / "assets" / "studio" / "lib" / "cards.ts"
+        script = self.write("try.mts", f"""import {{ cardHtml, loadCards }} from {json.dumps(str(cards_ts))};
+import {{ writeFileSync }} from 'node:fs';
+writeFileSync({json.dumps(str(self.dir / 'demos' / '2026-10-19-refunds-cards.json'))}, JSON.stringify({{ intro: {{ title: 'Refunds <b>', builtBy: ['none'], agenda: ['a','b','c','d','e','f','g','h','i'] }} }}));
+const cards = loadCards({json.dumps(str(self.dir / 'demos' / '2026-10-19-refunds-code.demo.ts'))});
+console.log(cardHtml('intro', cards));
+""")
+        (self.dir / "demos").mkdir()
+        res = subprocess.run(["node", "--experimental-strip-types", "--no-warnings", str(script)], capture_output=True, text=True)
+        if res.returncode and ("strip-types" in res.stderr or "Unknown file extension" in res.stderr):
+            self.skipTest("this Node cannot run TypeScript directly")
+        self.assertEqual(res.returncode, 0, res.stderr)
+        self.assertIn("Refunds &lt;b&gt;", res.stdout)      # text is escaped
+        self.assertNotIn("Built by", res.stdout)            # "none": no names
+        self.assertIn("and 2 more", res.stdout)             # seven chapters at most
+
+    def test_authors_are_names_from_git_never_emails_or_bots(self):
+        repo = self.dir / "repo"
+        repo.mkdir()
+        run("git", "init", "-q", cwd=repo)
+        for who, n in (("Sam Example", 3), ("Lee Sample", 1), ("dependabot[bot]", 5)):
+            for i in range(n):
+                (repo / "refund.ts").write_text(f"{who} {i}\n")
+                run("git", "add", ".", cwd=repo)
+                subprocess.run(["git", "commit", "-qm", f"c{i}", "--author", f"{who} <{who.split()[0].lower()}@acme.example>"],
+                               cwd=repo, check=True, env=GIT_ENV, capture_output=True)
+        names = json.loads(run("python3", SCRIPTS / "authors.py", repo, "HEAD", "refund.ts").stdout)
+        self.assertEqual(names, ["Sam Example", "Lee Sample"])
+
+    def test_credit_questions_offer_git_names_and_stay_with_the_feature(self):
+        proj = project.find(self.dir)
+        res = choices.ask(proj, "refunds", ["built_by", "contact"], {}, {}, {"built_by": ["Sam Example"], "contact": ["Sam Example"]})
+        built = res["ask"][0]
+        self.assertTrue(built["multiSelect"])
+        self.assertEqual([o["value"] for o in built["options"]], ["Sam Example", "none"])
+        choices.record(proj, "refunds", {"built_by": ["Orders API team"], "contact": "Orders API team"},
+                       ["built_by", "contact"], [], None, "")
+        self.assertEqual(choices.read_yml(proj.learned), {"contact": ["Orders API team"]})  # built_by is never learned
+        again = choices.ask(proj, "refunds", ["built_by", "contact"], {}, {}, {})
+        self.assertEqual((again["ask"], again["use"]["built_by"]["value"]), ([], ["Orders API team"]))
+
+
 class LoginSafety(Tmp):
     def test_forget_deletes_only_what_kt_studio_made(self):
         team = self.dir / ".auth-team"

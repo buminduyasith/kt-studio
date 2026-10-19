@@ -13,7 +13,7 @@ import sys
 from pathlib import Path
 
 TEMPLATE = Path(__file__).resolve().parent.parent / "assets" / "storyboard-template.html"
-KINDS = {"ui", "code", "nav", "title", "diagram", "terminal", "map"}
+KINDS = {"ui", "code", "nav", "title", "diagram", "terminal", "map", "intro", "outro"}
 NODE_KINDS = {"person", "app", "service", "job", "database", "cache", "queue", "external", "state"}
 STEP_KINDS = {"call", "reply", "event", "write", "read", "fail"}
 STATUSES = {"ready", "planned", "after-write"}
@@ -110,6 +110,41 @@ def map_scene_problems(sid: str, use: dict, maps: dict) -> list[str]:
     return found
 
 
+def card_problems(data: dict) -> list[str]:
+    """The intro opens the video and the outro closes it: each is one scene in its place, with its card."""
+    found = []
+    scenes = [s for p in data.get("parts", []) for c in p.get("chapters", []) for s in c.get("scenes", [])]
+    for kind, where, at in (("intro", "first", 0), ("outro", "last", -1)):
+        mine = [s for s in scenes if s.get("kind") == kind]
+        if not mine:
+            continue
+        if len(mine) > 1:
+            found.append(f"only one {kind} scene: {', '.join(s.get('id', '?') for s in mine)}")
+        if scenes[at] is not mine[0]:
+            found.append(f"{mine[0].get('id', '?')}: the {kind} must be the {where} scene of the video")
+        card = data.get(kind)
+        if not isinstance(card, dict):
+            found.append(f"an {kind} scene needs the top-level `{kind}` card")
+            continue
+        for key in ("builtBy",):
+            if key in card and not isinstance(card[key], list):
+                found.append(f"{kind}.{key} must be a list (use [] to show no names)")
+    intro, outro = data.get("intro"), data.get("outro")
+    if isinstance(intro, dict):
+        learn = intro.get("learn", [])
+        if not (isinstance(learn, list) and 1 <= len(learn) <= 4):
+            found.append("intro.learn must list 1 to 4 things the viewer will learn")
+        if len(intro.get("tagline", "")) > 140:
+            found.append(f"intro.tagline is {len(intro['tagline'])} characters; keep it to one line, about 140")
+    if isinstance(outro, dict):
+        remember = outro.get("remember", [])
+        if not (isinstance(remember, list) and 1 <= len(remember) <= 4):
+            found.append("outro.remember must list 1 to 4 things to remember (three is best)")
+        if not all(isinstance(n, dict) and n.get("label") for n in outro.get("next", [])):
+            found.append("outro.next must be a list of {label, detail}")
+    return found
+
+
 # Lists the template draws: a missing one would leave the artifact page blank.
 LISTS = {"brief": ("readAs",), "overview": ("what", "explain", "repos", "notCovered", "set", "writes", "questions"),
          "production": ("pace", "pronounce", "deliver")}
@@ -144,6 +179,7 @@ def problems(data: dict, folder: Path) -> list[str]:
                     found.append(f"{scene.get('id', '?')}: {scene['kind']} scenes belong in Part B (Part A records the app)")
     for name, m in (data.get("maps") or {}).items():
         found += map_problems(name, m)
+    found += card_problems(data)
     seen = set()
     for part in data.get("parts", []):
         for chapter in part.get("chapters", []):
@@ -221,8 +257,13 @@ def mark_changes(data: dict, folder: Path) -> int:
     delivered = folder.parent / "5-videos" / "storyboard.delivered.json"
     if not delivered.exists():
         return 0
-    seen = lambda s: {k: s.get(k) for k in SEEN} | ({"title": s.get("title")} if s.get("kind") == "title" else {})
-    old = {s["id"]: seen(s) for p in json.loads(delivered.read_text())["parts"] for c in p["chapters"] for s in c["scenes"]}
+    def seen_in(board: dict):
+        # A title scene shows its title; an intro or outro shows its card.
+        return lambda s: ({k: s.get(k) for k in SEEN} | ({"title": s.get("title")} if s.get("kind") == "title" else {})
+                          | ({"card": board.get(s["kind"])} if s.get("kind") in ("intro", "outro") else {}))
+    before = json.loads(delivered.read_text())
+    seen_old, seen = seen_in(before), seen_in(data)
+    old = {s["id"]: seen_old(s) for p in before["parts"] for c in p["chapters"] for s in c["scenes"]}
     count = 0
     for part in data["parts"]:
         for chapter in part["chapters"]:
@@ -240,6 +281,11 @@ def build(folder: Path) -> Path:
     for note in estimate(data):
         print(f"note: {note}")
     changed = mark_changes(data, folder)
+    kinds = {s.get("kind") for p in data["parts"] for c in p["chapters"] for s in c["scenes"]}
+    for kind, what in (("intro", "opens the video: who built it, what you will learn, the chapters"),
+                       ("outro", "closes it: what to remember, next steps, who to ask")):
+        if kind not in kinds:
+            print(f"note: no {kind} scene; an {kind} {what} (references/kt-design.md)")
     if changed:
         print(f"update: {changed} scene(s) differ from the delivered video and are marked Changed")
     for name, m in (data.get("maps") or {}).items():

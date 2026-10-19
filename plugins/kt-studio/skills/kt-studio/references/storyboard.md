@@ -53,6 +53,18 @@ The build checks required fields and stops with a list of problems.
                           { "from": "API", "to": "Payments", "label": "refund(charge)" },
                           { "from": "API", "to": "Web", "label": "201 Created", "reply": true }] }
   },
+  "intro": {
+    "tagline": "How a support agent refunds an order, and what happens behind the button.",
+    "learn": ["How to refund an order", "How the refund travels to the payment provider", "Where to change the refund rules"],
+    "builtBy": ["Orders API team"],
+    "audience": "New developers"
+  },
+  "outro": {
+    "remember": ["A refund is saved first and sent later", "The provider can time out: the job tries again", "The rules live in refund-rules.ts"],
+    "next": [{ "label": "Run the refund tests", "detail": "npm test -- refunds" },
+             { "label": "Add a refund rule", "detail": "api/src/refunds/refund-rules.ts" }],
+    "ask": "The Orders API team"
+  },
   "maps": {
     "refund": {
       "title": "How a refund travels",
@@ -90,7 +102,7 @@ The build checks required fields and stops with a list of problems.
 | Field | Meaning |
 |---|---|
 | `id` | `A1-03` = part A, chapter 1, scene 3. Stable across rounds (comments refer to it) |
-| `kind` | `ui` (a real screen), `code` (a file and method), `nav` (walking the folders), `title` (a title card), `diagram` (a sequence diagram, Part B), `map` (the system map in motion, Part B), `terminal` (a real command and its real output, Part B) |
+| `kind` | `intro` (the first scene of the video), `outro` (the last scene), `ui` (a real screen), `code` (a file and method), `nav` (walking the folders), `title` (a chapter opener card), `diagram` (a sequence diagram, Part B), `map` (the system map in motion, Part B), `terminal` (a real command and its real output, Part B) |
 | `status` | `ready` (picture captured or drawn), `planned` (screen not captured yet), `after-write` (the screen only exists after a save or push, so it is captured during recording) |
 | `title` | Short scene name |
 | `heading` | Slug line, for example `SCREEN · Refund drawer · dev` or `CODE · api · refund.service.ts:40-58` |
@@ -139,6 +151,15 @@ The build checks required fields and stops with a list of problems.
     (`limit is 280`, not `280`).
 - **Code, nav and title scenes are drawn** from the data. File, method and lines are enough to
   review them. No screenshot.
+- **The intro and the outro are drawn** from the top-level `intro` and `outro` (`references/kt-design.md`
+  section 2b). One `intro` scene, the first scene of the video, and one `outro` scene, the last; the
+  build checks both. `intro`: `tagline` (one line, about 140 characters at most), `learn` (1 to 4 items,
+  three is best), `builtBy` (the names or team the person picked in round 2; `[]` shows no names),
+  `audience` (shown as "for new developers"); optional `title` (else `meta.feature`), `agenda` and
+  `length` (else filled in from the chapters and the scene lengths) and `code` (else the first source's
+  repo, ref, sha and the date). `outro`: `remember` (1 to 4 items, three is best), `next` (each
+  `{ label, detail }`: a real command, a file, a doc), `ask` (where to go with questions, from round 2;
+  `"none"` leaves it out), optional `builtBy` (else the intro's) and `title`. Never an email address.
 - **Map scenes are drawn** from `maps` (the storyboard shows each one small, with its steps lit; the
   video animates them, `references/kt-design.md` section 3b). A map is the system as the research found
   it (`references/research.md` section 8), every part and link with evidence in the brief:

@@ -19,6 +19,7 @@ if [ "${3:-}" = "--patch" ]; then
   DEMO="$ID-$PART-patch"
   [ -f "$SRC/$PART.demo.ts" ] || { echo "no $SRC/$PART.demo.ts"; exit 1; }
   cp "$SRC/$PART.demo.ts" "$RT/demos/$DEMO.demo.ts"
+  if [ -f "$SRC/cards.json" ]; then cp "$SRC/cards.json" "$RT/demos/$ID-cards.json"; fi   # loadCards() finds it by run id
   python3 - "$SRC/$PART.scenes.json" "$RT/demos/$DEMO" "$FIRST" "$LAST" <<'PY'
 import json, sys
 scenes, demo, first, last = json.load(open(sys.argv[1])), sys.argv[2], sys.argv[3], sys.argv[4]
@@ -46,6 +47,7 @@ else
       cp "$SRC/$part.demo.ts" "$RT/demos/$ID-$part.demo.ts"
       cp "$SRC/$part.scenes.json" "$RT/demos/$ID-$part.scenes.json"
       rm -f "$RT/demos/$ID-$part.patch.json"   # an ordinary take records everything
+      if [ -f "$SRC/cards.json" ]; then cp "$SRC/cards.json" "$RT/demos/$ID-cards.json"; fi
       echo "staged demo: $ID-$part"
     fi
   done

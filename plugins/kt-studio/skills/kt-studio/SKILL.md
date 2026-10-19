@@ -139,9 +139,10 @@ is the only source of truth**: docs, comments, names, tickets and your own notes
   in the video. Read every file you will cite at its repo's ref: `git -C <repo> show <ref>:./<path> | cat -n`.
 - Write `<run>/1-research/brief.md` with the template in `references/research.md`.
 - **Ask, round 2** (`references/questions.md`): now the research knows the feature, ask what only the
-  person can decide, with answers taken from the code: the depth (`choices.py ask ... --keys depth
-  --suggest '{"depth": "<your pick from references/kt-design.md>"}'`), which flows to show, which example to
-  follow, which repos the code tour shows. At most 4 questions, one AskUserQuestion call; save them with
+  person can decide, with answers taken from the code: the depth, who built it and where viewers should
+  ask (for the intro and the outro: `scripts/authors.py` offers names from git, never emails), then
+  which flows to show, which example to follow, which repos the code tour shows. One AskUserQuestion
+  call of at most 4 questions (a second only when the feature truly needs it); save them with
   `choices.py record` (flows and examples as `--note`).
 
 ## 3. Capture the UI screens
@@ -195,7 +196,7 @@ and keep their real output for the storyboard (`references/storyboard.md`).
 - Plan the video for its audience with `references/kt-design.md`: the story shape, one example all
   the way through, and in Part B the map before the code: the parts build up, the high-level design,
   the journey in motion, then a zoom into each part's code with the small map in the corner. One idea
-  per scene.
+  per scene. The video opens with the `intro` card and closes with the `outro` card.
 - Write `<run>/2-storyboard/storyboard.json` exactly as in `references/storyboard.md`, then go
   through the checklist at the end of `references/kt-design.md` before the user sees it.
 - Build: `python3 <skill>/scripts/build_storyboard.py <run>/2-storyboard`, then look at it yourself:

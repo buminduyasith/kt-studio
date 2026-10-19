@@ -1,7 +1,8 @@
 """Writes the voice files for the recorder from the approved storyboard, so the narration is exactly
 the storyboard's words: 3-scripts/ui.scenes.json (part A) and 3-scripts/code.scenes.json (part B),
-3-scripts/diagrams.json when the storyboard has sequence diagrams, and 3-scripts/maps.json when it has
-system maps.
+3-scripts/diagrams.json when the storyboard has sequence diagrams, 3-scripts/maps.json when it has
+system maps, and 3-scripts/cards.json for the intro and outro cards (lib/cards.ts), with what the
+storyboard leaves out filled in: the title, the chapter list, the length and the code version.
 
 Each entry: { "scene", "text" (spoken: the pronounce map applied), "caption" (on-screen spelling, only
 when it differs) }. An "overlay" already in the file is kept, so it can be added by hand once.
@@ -14,6 +15,9 @@ import json
 import re
 import sys
 from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import build_storyboard  # noqa: E402
 
 
 def main() -> None:
@@ -74,6 +78,38 @@ def main() -> None:
         out = run / "3-scripts" / "maps.json"
         out.write_text(json.dumps(board["maps"], indent=2, ensure_ascii=False) + "\n")
         print(f"{out}: {len(board['maps'])} maps")
+
+    # The intro and outro cards (lib/cards.ts reads cards.json, staged next to the demo).
+    cards = cards_for(board)
+    if cards:
+        out = run / "3-scripts" / "cards.json"
+        out.write_text(json.dumps(cards, indent=2, ensure_ascii=False) + "\n")
+        print(f"{out}: {', '.join(cards)}")
+
+
+def cards_for(board: dict) -> dict:
+    """The storyboard's intro and outro, with the parts it may leave out filled in."""
+    kinds = {s.get("kind") for p in board["parts"] for c in p["chapters"] for s in c["scenes"]}
+    cards = {}
+    if "intro" in kinds:
+        intro = dict(board.get("intro") or {})
+        intro.setdefault("title", board["meta"].get("feature", ""))
+        intro.setdefault("agenda", [c["title"] for p in board["parts"] for c in p["chapters"]
+                                    if not all(s.get("kind") in ("intro", "outro") for s in c["scenes"])])
+        if "length" not in intro:
+            build_storyboard.estimate(board)
+            total = sum(s["seconds"] for p in board["parts"] for c in p["chapters"] for s in c["scenes"])
+            intro["length"] = f"About {max(1, round(total / 60))} minute{'s' if round(total / 60) > 1 else ''}"
+        if "code" not in intro and board["meta"].get("sources"):
+            src = board["meta"]["sources"][0]
+            ref = re.sub(r"^origin/", "", src.get("ref", ""))
+            intro["code"] = f"Code: {src.get('repo', '')} {ref} @ {src.get('sha', '')[:8]} · {board['meta'].get('date', '')}".replace("  ", " ")
+        cards["intro"] = intro
+    if "outro" in kinds:
+        outro = dict(board.get("outro") or {})
+        outro.setdefault("builtBy", (board.get("intro") or {}).get("builtBy", []))
+        cards["outro"] = outro
+    return cards
 
 
 if __name__ == "__main__":

@@ -31,6 +31,7 @@ import path from 'node:path';
 import { test, zoomTo, createHumanCursor } from '@argo-video/cli';
 import { CALM } from '../lib/pacing';
 import { createSync, HOP } from '../lib/sync';
+import { cardOn, loadCards } from '../lib/cards';
 
 const DRY = process.env.KT_DRY === '1';          // rehearsal: stop before every write
 const NAME = process.env.KT_NAME ?? 'kt-video';   // unique names for things the recording creates
@@ -108,7 +109,14 @@ Rules:
   `s.left()` for `ms`, after `say()`. It waits for its whole duration: in a scene that also has
   actions, start it without waiting (`void showOverlay(page, 'A1-05', s.left())`), then do the actions.
   `make_scenes.py` turns a UI scene's storyboard `note` into a lower-third overlay.
-- A `title` scene in Part A (why the feature exists, a chapter opener) is a card over the app's first
+- The `intro` scene (the first of the video) and the `outro` scene (the last) are full screen cards
+  laid over whatever is on screen (`lib/cards.ts`, data from the storyboard through `3-scripts/cards.json`).
+  Go to the app's first screen before `narration.startRecording`, then:
+  `const cards = loadCards(__filename);` and `await cardOn(await sync.say('A1-01'), page, 'intro', cards);`.
+  The intro fades into the screen behind it at the end of its line. For the outro (when Part A is the
+  last part): `await cardOn(await sync.say('A3-05'), page, 'outro', cards);`; it stays. The card's blocks
+  come in one by one; pass words to time them: `cardOn(s, page, 'intro', cards, ['learn', 'chapters'])`.
+- A `title` scene in Part A (a chapter opener) is a card over the app's first
   screen: `make_scenes.py` gives it a `headline-card` overlay, and the script shows it with
   `s = await sync.say('A1-01'); await showOverlay(page, 'A1-01', s.left());` (`s.left()` is how long the
   scene still runs, from the word timings; `narration.durationFor()` is a fixed 5 s in a rehearsal).

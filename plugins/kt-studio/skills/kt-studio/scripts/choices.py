@@ -21,10 +21,14 @@ suggestion, else this feature's last answer, else the answer picked most often i
 
 Usage:
   python3 choices.py ask <root> <feature> [--keys audience,show,environment,sources] [--given '<json>'] [--suggest '<json>']
+                         [--offer '<json>']
       Prints JSON: "use" (settled answers and where each came from), "ask" (the questions, at most 4,
       each option with its "value"), and "say" (one line telling the person what was settled).
       --given: what the request says, as values ({"audience": "qa"}). --suggest: the research's best
-      guess, used only to order the options ({"depth": "deep-dive"}).
+      guess, used only to order the options ({"depth": "deep-dive"}). --offer: answers to offer for the
+      intro and outro questions, {"built_by": [names from authors.py], "contact": [...]}.
+      built_by belongs to one feature: settled by its feature.yml, never learned from other features.
+      contact is learned too, as a team channel is often the same for every feature.
   python3 choices.py record <root> <feature> --answers '<json>' [--learn key,key] [--note '<text>']...
                             [--knowledge '<folder, file or link>']... [--run <run-folder>] [--title '<title>']
       Saves the answers in feature.yml (and in the run's run.json `choices` with --run). Only the keys in
@@ -98,7 +102,25 @@ KEYS: dict[str, dict] = {
             ("code-only", "Code only", "Only the code and its git history: skip the docs, folders and links"),
         ],
     },
+    # The intro and the outro. Names come from --offer (authors.py: git, names only); the person picks.
+    "built_by": {
+        "header": "Built by",
+        "question": "Who built this feature? The intro and the outro name them. (Pick one or more, or type a "
+                    "team name under Other.)",
+        "multi": True,
+        "options": [("none", "Show no names", "The intro and the outro name nobody")],
+        "offered": "Most commits on this feature's files (git)",
+    },
+    "contact": {
+        "header": "Questions",
+        "question": "Where should viewers go with questions? The outro shows it. (Type a channel, a team or a "
+                    "person under Other.)",
+        "options": [("none", "Leave it out", "The outro shows no contact")],
+        "offered": "Suggested from who built it",
+    },
 }
+# Answers that belong to one feature only: never learned from other features, never settled by them.
+NOT_LEARNED = ("environment", "depth", "built_by")
 ROUND_ONE = ["audience", "show", "environment", "sources"]
 WHY = {"request": "you asked for it", "feature": "this feature's last video", "instructions": "your instructions",
        "only one": "the only one", "no app": "no app in ## Addresses", "learned": f"picked {SETTLE} times in a row"}
@@ -166,7 +188,8 @@ FEATURE_HEADER = """# This feature's answers for KT Studio videos: who they are 
 LEARNED_HEADER = """# What KT Studio learned from the answers people picked for earlier videos, newest last.
 # It recommends the answer picked most often, and stops asking once the same answer was picked
 # 3 times in a row. Delete an answer to make it ask again. Written by KT Studio (choices.py)."""
-FEATURE_ORDER = ["feature", "title", "audience", "show", "environment", "depth", "sources", "language", "knowledge"]
+FEATURE_ORDER = ["feature", "title", "audience", "show", "environment", "depth", "sources", "language", "built_by",
+                 "contact", "knowledge"]
 
 
 # ---- what the project already says
@@ -237,7 +260,7 @@ def to_value(key: str, answer: str, envs: list[str]) -> str:
 
 # ---- ask and record
 
-def ask(proj: project.Project, feature: str, keys: list[str], given: dict, suggest: dict) -> dict:
+def ask(proj: project.Project, feature: str, keys: list[str], given: dict, suggest: dict, offer: dict | None = None) -> dict:
     saved = read_yml(proj.feature(feature) / "feature.yml")
     learned = read_yml(proj.learned)
     defaults = config_defaults(proj)
@@ -245,8 +268,9 @@ def ask(proj: project.Project, feature: str, keys: list[str], given: dict, sugge
     use: dict[str, dict] = {}
     questions = []
 
-    def settle(key: str, value: str, source: str) -> None:
-        use[key] = {"value": value, "label": label_of(key, value, envs), "from": source}
+    def settle(key: str, value, source: str) -> None:
+        label = ", ".join(label_of(key, v, envs) for v in value) if isinstance(value, list) else label_of(key, value, envs)
+        use[key] = {"value": value, "label": label, "from": source}
 
     for key in keys:
         if key not in KEYS:
@@ -255,10 +279,11 @@ def ask(proj: project.Project, feature: str, keys: list[str], given: dict, sugge
         if key in given and str(given[key]).strip():
             settle(key, to_value(key, given[key], envs), "request")
             continue
-        last = saved.get(key) if isinstance(saved.get(key), str) else ""
+        last = saved.get(key) if isinstance(saved.get(key), (str, list)) else ""
         if last and key != "environment":
             settle(key, last, "feature")
             continue
+        last = last if isinstance(last, str) else ""
         if key == "show" and not has_app:
             settle(key, "code", "no app")
             continue
@@ -272,22 +297,32 @@ def ask(proj: project.Project, feature: str, keys: list[str], given: dict, sugge
             if len(envs) == 1:
                 settle(key, envs[0], "only one")
                 continue
-        if streak(history) and key not in ("environment", "depth"):
+        if streak(history) and key not in NOT_LEARNED:
             settle(key, streak(history), "learned")
             continue
         opts = options_for(key, envs)
+        if "offered" in KEYS[key]:
+            # Names from git or from the answers people gave before, then the fixed answers; 4 at most.
+            seen = {v for v, _, _ in opts}
+            extra = [n for n in [most_picked(history), *((offer or {}).get(key) or [])] if n and n not in seen]
+            extra = list(dict.fromkeys(extra))[:4 - len(opts)]
+            opts = [(n, n, KEYS[key]["offered"] if n != most_picked(history) else "Picked before") for n in extra] + list(opts)
         values = [v for v, _, _ in opts]
         builtin = KEYS[key].get("default", "")
         pick = next((v for v in [suggest.get(key), last, most_picked(history), defaults.get(key), builtin]
                      if v and v in values), values[0] if values else "")
         if key == "sources":
             opts = [(v, label, desc or project_sources(proj)) for v, label, desc in opts]
+        if KEYS[key].get("multi"):
+            pick = ""  # several answers: nothing is ticked for the person
         ordered = sorted(opts, key=lambda o: o[0] != pick)[:4]
+        if len(ordered) < 2:
+            continue  # nothing to choose between (no names offered): the person types it, or it is left out
         questions.append({
             "key": key,
             "question": KEYS[key]["question"],
             "header": KEYS[key]["header"],
-            "multiSelect": False,
+            "multiSelect": bool(KEYS[key].get("multi")),
             "options": [{"label": label + (" (Recommended)" if value == pick else ""), "value": value,
                          "description": desc} for value, label, desc in ordered],
         })
@@ -315,7 +350,8 @@ def record(proj: project.Project, feature: str, answers: dict, learn: list[str],
     folder = proj.feature(feature)
     path = folder / "feature.yml"
     data = read_yml(path)
-    clean = {k: to_value(k, v, envs) for k, v in answers.items() if str(v).strip()}
+    clean = {k: [to_value(k, x, envs) for x in v if str(x).strip()] if isinstance(v, list) else to_value(k, v, envs)
+             for k, v in answers.items() if (v if isinstance(v, list) else str(v).strip())}
     data["feature"] = feature
     if title:
         data["title"] = title
@@ -335,10 +371,11 @@ def record(proj: project.Project, feature: str, answers: dict, learn: list[str],
     ordered.update({k: v for k, v in data.items() if k not in ordered and k not in ("notes", "runs", "updated")})
     ordered.update({"notes": data["notes"], "runs": data["runs"], "updated": data["updated"]})
     write_yml(path, FEATURE_HEADER, ordered)
-    done = [f"saved {proj.rel(path)}: " + ", ".join([f"{k} {v}" for k, v in clean.items()]
+    shown = lambda v: "; ".join(v) if isinstance(v, list) else v
+    done = [f"saved {proj.rel(path)}: " + ", ".join([f"{k} {shown(v)}" for k, v in clean.items()]
                                                      + [f"knowledge {k}" for k in (knowledge or [])])]
 
-    taught = {k: clean[k] for k in learn if k in clean}
+    taught = {k: clean[k] for k in learn if k in clean and k not in ("built_by",) and isinstance(clean[k], str)}
     if taught:
         learned = read_yml(proj.learned)
         for k, v in taught.items():
@@ -387,7 +424,7 @@ def main() -> None:
     if command == "ask":
         keys = [k.strip() for k in (option(rest, "--keys") or ",".join(ROUND_ONE)).split(",") if k.strip()]
         result = ask(proj, feature, keys, as_json(option(rest, "--given"), "--given"),
-                     as_json(option(rest, "--suggest"), "--suggest"))
+                     as_json(option(rest, "--suggest"), "--suggest"), as_json(option(rest, "--offer"), "--offer"))
         print(json.dumps(result, indent=2, ensure_ascii=False))
     else:
         run = option(rest, "--run")

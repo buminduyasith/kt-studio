@@ -56,10 +56,27 @@ The environment question is left out when the video shows code only, or `## Addr
 Now you know the feature. Ask only what the person must decide and the code cannot: these questions
 are specific to this feature, and their answers come from the brief.
 
-1. **Depth**, always unless settled: `choices.py ask <root> <feature-slug> --keys depth --suggest '{"depth": "<pick>"}'`.
-   Your pick follows `references/kt-design.md` ("How deep to go"). Put the reason in the description
-   of the recommended answer, for example "3 services and 2 async hops".
-2. Up to 3 more of your own, only when the brief shows a real choice. Examples:
+1. **Depth, who built it, and where to ask**, in one call, unless settled:
+
+   ```bash
+   python3 <skill>/scripts/authors.py <repo-path> <ref> <file or folder>...      # once per repo on the code path
+   python3 <skill>/scripts/choices.py ask <root> <feature-slug> --keys depth,built_by,contact \
+     --suggest '{"depth": "<pick>"}' --offer '{"built_by": [<names from authors.py>], "contact": [<the first of them>]}'
+   ```
+
+   - **Depth**: your pick follows `references/kt-design.md` ("How deep to go"). Put the reason in the
+     description of the recommended answer, for example "3 services and 2 async hops".
+   - **Who built it** (`built_by`, several answers allowed) names the people or the team on the intro and
+     the outro. `authors.py` gives the names with the most commits on the feature's files (from the
+     brief's code path), names only: never an email, never a bot. Merge the repos' lists, most commits
+     first, at most three. The person can pick them, type a team name under "Other", or pick "Show no
+     names". Names are personal: show only what the person picked.
+   - **Where to ask** (`contact`) goes on the outro: a team, a channel or a person, or "Leave it out".
+   - Both belong to the feature: the next video of the same feature asks neither. A contact picked three
+     times in a row stops being asked for other features too.
+2. One more of your own in the same call (AskUserQuestion takes four), only when the brief shows a real
+   choice. Settled answers leave room for more. When the feature truly needs more choices, one second
+   call of at most three. Examples:
    - "I found three flows: full refund, part refund, refund failed. Which should the video show?"
      (`multiSelect: true`, the flows most people use first).
    - "Which example should the video follow from start to end?" (two or three real records or
@@ -81,6 +98,8 @@ python3 <skill>/scripts/choices.py record <root> <feature-slug> --run <run> \
 ```
 
 - `--answers`: every answer of the round, settled ones included, so `run.json` `choices` has them all.
+  `built_by` is a list (`["Orders API team"]`, or `["none"]` for no names); put the same names in the
+  storyboard's `intro.builtBy` (`[]` for no names) and the contact in `outro.ask`.
   A label from AskUserQuestion is turned into its value; an "Other" answer is kept in the person's words.
 - `--learn`: only the keys the person answered in this round or the request said. Never the ones settled
   by `feature.yml`, `learned.yml` or the instructions: counting them again would teach nothing.

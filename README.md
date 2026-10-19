@@ -23,7 +23,9 @@ Each video has two parts:
   what happens when it fails. Then it zooms into each part and opens the real files in a VS Code style
   editor, one idea at a time, with a small map in the corner that says where you are.
 
-You also get subtitles and chapters. The voice is made **on your computer**, so your code and
+Every video opens with an intro card (what the feature is, what you will learn, the chapters, who
+built it) and closes with an outro card (three things to remember, next steps, who to ask). You pick
+which names are shown, or none. You also get subtitles and chapters. The voice is made **on your computer**, so your code and
 narration are never sent to a voice service.
 
 ![How KT Studio fits together: you, Claude Code with the plugin, your project, the storyboard, the recorder, your app and the run folder](docs/images/architecture.svg)

@@ -1,6 +1,6 @@
 # Designing a KT video people understand
 
-**Contents:** 0. How people learn from a video · 1. Who is watching · 1b. How deep to go · 2. The shape that works · 3. Principles · 3b. Motion: showing the system work · 4. Length · 5. Scene patterns · 6. Writing the voice lines · 7. Check the storyboard before the user sees it
+**Contents:** 0. How people learn from a video · 1. Who is watching · 1b. How deep to go · 2. The shape that works · 2b. The intro and the outro · 3. Principles · 3b. Motion: showing the system work · 4. Length · 5. Scene patterns · 6. Writing the voice lines · 7. Check the storyboard before the user sees it
 
 A good knowledge-transfer video leaves the viewer able to **do** something: test the feature, change
 it, explain it, or fix it. Decide that first; every scene must serve it. The bar: a developer who has
@@ -64,13 +64,14 @@ async boundaries (queues, events, jobs, webhooks), and rules with numbers.
 ## 2. The shape that works
 
 No screens to show (a CLI, a library, a worker, an API with no UI), or the user skips them: there is
-no Part A. Part B opens with a short "Try it" chapter of `terminal` scenes (run it, see the answer,
-see a rule refuse), then goes on as below. Number its chapters B1, B2, ... as usual.
+no Part A. Part B opens with the intro, then a short "Try it" chapter of `terminal` scenes (run it, see
+the answer, see a rule refuse), then goes on as below. Number its chapters B1, B2, ... as usual.
 
 Part A (the app):
 
-1. **Why it exists** (one title scene, 10 to 20 s, a card over the first screen): the problem, who
-   has it, what you will learn.
+1. **The intro** (one `intro` scene, the first of the video, 15 to 30 s): the card says what the
+   feature is and why it exists, what you will learn, the chapters, who built it and which version of
+   the code; the voice says why it matters and what the viewer will be able to do (section 2b).
 2. **Use it**: the main flow first, happy path, with realistic data. Then the rule that trips people
    up, shown failing on screen. Then the other role (the approver, the admin).
 
@@ -93,10 +94,28 @@ Part B (how it works), from the outside in, the way a map zooms in:
 8. **Why it is built this way** (one or two scenes): the decisions behind the shape, with their source.
 9. **Change, test, debug** (one to three scenes, for developer and QA audiences): where a new rule
    goes, the tests that cover it (run, with their real output), what the logs say when it fails.
-10. **Recap**: the journey replays once, quickly, on the full map; then a title scene with the three
-    things to remember.
+10. **Recap and outro**: the journey replays once, quickly, on the full map; then the `outro` scene,
+    the last of the video: three things to remember, the next steps, where to ask (section 2b).
 
-For an audience without code, Part B can be chapters 3 to 5, 7 and 8 alone.
+For an audience without code, Part B can be chapters 3 to 5, 7 and 8 alone, still with the intro and
+the outro.
+
+## 2b. The intro and the outro
+
+Every video opens with an intro and closes with an outro: a full screen card (`lib/cards.ts`), the
+same in Part A and Part B, whose parts come in one by one with the voice. The intro fades away into the
+first screen; the outro stays to the end. They are the "map first" and the "what now" of the video.
+
+| | The card shows (storyboard `intro` / `outro`) | The voice says |
+|---|---|---|
+| **Intro** | The feature's name, one line on what it is and why it exists (`tagline`), what you will learn (`learn`, 3 items), the chapters (filled in from the storyboard), the length, who built it (`builtBy`) and the code version (filled in from `meta.sources`) | Why it matters and what the viewer will be able to do after watching, in two or three sentences. It names who built it ("Built by the Orders API team"), never reads the card aloud |
+| **Outro** | Three things to remember (`remember`), the next steps (`next`: a real test command, the file where a new rule goes, the doc to read), where to ask (`ask`), who built it | The three things, in other words than the card, then where to go with questions. It ends on a short, friendly line, not "thanks for watching" |
+
+- Who built it and where to ask come from round 2 (`references/questions.md`): the person picks the
+  names, a team, or no names. Never show an email address or anything else personal.
+- The intro's `learn` items match the video's goal (`brief.readAs`); the outro's `remember` items are
+  the key rules and ideas, and each one was shown in the video.
+- Keep each under about 30 s. No music, no logo animation, no long thanks.
 
 ## 3. Principles
 
@@ -178,7 +197,9 @@ storyboard (words / 2.4 + 2 s at speed 0.9) adds up to the length; cut scenes, n
 
 | Pattern | Kind | Use it for |
 |---|---|---|
-| Title card | `title` | Why it exists, chapter openers, the recap |
+| Intro | `intro` | The first scene: what it is, why it exists, what you will learn, the chapters, who built it |
+| Outro | `outro` | The last scene: three things to remember, next steps, where to ask |
+| Title card | `title` | Chapter openers |
 | Map build-up | `map` (`reveal`) | The parts this feature crosses, each named with its job, coming in as the voice names them |
 | High-level design | `map` (`overview`) | Every part and connection, still, inside its boundaries |
 | Journey | `map` (`steps`) | The worked example travelling across the parts, one step per sentence |
@@ -210,6 +231,7 @@ storyboard (words / 2.4 + 2 s at speed 0.9) adds up to the length; cut scenes, n
 
 ## 7. Check the storyboard before the user sees it
 
+- [ ] The video opens with the `intro` and closes with the `outro`; the intro's `learn` matches the goal.
 - [ ] Every scene serves the audience goal in `brief.readAs`.
 - [ ] Part B opens with the map: every part named with its one-line job, before any code.
 - [ ] One example runs through Part A, the journey on the map, and the code.

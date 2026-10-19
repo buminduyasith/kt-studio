@@ -127,8 +127,14 @@ test(path.basename(__filename, '.demo.ts'), async ({ page, narration }) => {
 | `zoomInto(page, node, s?, word?)` | Zooms into one part of the map on screen (on `word` when given), right before its code opens |
 | `locate(page, map, node)` / `hideLocator(page)` | The corner map for a code scene with `where`; call it right after the file opens. It stays until the next `locate`, a title or `hideLocator` |
 
-A `title` scene in Part B (the opening, a chapter opener, the recap) is the welcome screen:
-`await welcome(page, 'Three things to remember', '1. ...<br>2. ...'); s = await sync.say('B3-01'); await s.end();`
+The `intro` scene (when Part B is the first part: a project with no screens) and the `outro` scene (the
+last of the video) are full screen cards over the tour (`lib/cards.ts`):
+`const cards = loadCards(__filename);`, then `await cardOn(await sync.say('B1-01'), page, 'intro', cards);`
+right after `openTour`, and at the end `await cardOn(await sync.say('B5-02'), page, 'outro', cards);` after
+the recap replay (`mapOn(..., { replay: true })`). The outro stays on screen to the end.
+
+A `title` scene in Part B (a chapter opener) is the welcome screen:
+`await welcome(page, 'How it works in code', 'From the button to the database'); s = await sync.say('B3-01'); await s.end();`
 (`welcome()` fades the code out first).
 
 Rules:
