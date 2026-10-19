@@ -116,6 +116,9 @@ first screen; the outro stays to the end. They are the "map first" and the "what
 - The intro's `learn` items match the video's goal (`brief.readAs`); the outro's `remember` items are
   the key rules and ideas, and each one was shown in the video.
 - Keep each under about 30 s. No music, no logo animation, no long thanks.
+- The project's brand (`branding` in config.yml, `references/config.md`) puts its logo on both cards
+  and its colour on the cards, the map and the code highlight. Nothing else changes: the layout stays
+  the same, so every KT video reads the same way.
 
 ## 3. Principles
 

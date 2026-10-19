@@ -147,8 +147,11 @@ ul.plain { margin: 0; padding-left: 18px; display: grid; gap: 6px; }
 .card.title .s { font: 13px/1.4 var(--body); color: #a9b1bd; margin-top: 6px; }
 .card.diagram svg, .card.map svg { width: 100%; height: 100%; display: block; }
 .card.kt { padding: 44px 26px 14px; background: radial-gradient(circle at 18% 12%, #23262d 0%, #17181b 60%, #111214 100%); color: #e8e8e8; display: flex; flex-direction: column; gap: 6px; overflow: hidden; }
-.card.kt .eb { font: 700 9px var(--body); letter-spacing: 2px; color: #ffc400; }
-.card.kt .tt { font: 700 22px/1.1 var(--body); color: #fff; border-left: 3px solid #ffc400; padding-left: 8px; }
+.card.kt { --acc: #ffc400; position: relative; }
+.card.kt .bm { position: absolute; right: 22px; top: 40px; display: flex; align-items: center; gap: 6px; font: 600 11px var(--body); color: #e8e8e8; }
+.card.kt .bm img { max-height: 22px; max-width: 110px; }
+.card.kt .eb { font: 700 9px var(--body); letter-spacing: 2px; color: var(--acc); }
+.card.kt .tt { font: 700 22px/1.1 var(--body); color: #fff; border-left: 3px solid var(--acc); padding-left: 8px; }
 .card.kt .tg { font-size: 11px; color: #b8bcc4; }
 .card.kt .cols { display: grid; grid-template-columns: 1.4fr 1fr; gap: 14px; margin-top: 4px; flex: 1; }
 .card.kt .hd { font: 700 8px var(--body); letter-spacing: 1.5px; color: #8a8f99; margin-bottom: 3px; }
@@ -313,10 +316,15 @@ footer { margin-top: 48px; padding-top: 14px; border-top: 1px solid var(--line);
 
   // The intro and outro cards, small: the same blocks the video shows, in the same places.
   const credit = (list) => (list || []).filter((n) => n && n !== 'none').join(', ');
+  // The project's brand, as the video shows it: its colour, and its logo in the top-right corner.
+  const B = D.brand || {};
+  const brandStyle = B.accent ? ` style="--acc:${esc(B.accent)}"` : '';
+  const brandMark = () => (B.logo && B.logo.startsWith('data:image/')) || B.name
+    ? `<div class="bm">${B.logo && B.logo.startsWith('data:image/') ? `<img src="${B.logo}" alt="">` : ''}${B.name ? `<span>${esc(B.name)}</span>` : ''}</div>` : '';
   const introCard = () => {
     const c = D.intro || {};
     const agenda = c.agenda || D.parts.flatMap((p) => p.chapters).filter((ch) => !ch.scenes.every((x) => x.kind === 'intro' || x.kind === 'outro')).map((ch) => ch.title);
-    return `<div class="card kt"><div class="eb">KNOWLEDGE TRANSFER${c.audience ? ' · ' + esc(c.audience.toUpperCase()) : ''}</div>`
+    return `<div class="card kt"${brandStyle}>${brandMark()}<div class="eb">KNOWLEDGE TRANSFER${c.audience ? ' · ' + esc(c.audience.toUpperCase()) : ''}</div>`
       + `<div class="tt">${esc(c.title || m.feature)}</div>${c.tagline ? `<div class="tg">${esc(c.tagline)}</div>` : ''}`
       + `<div class="cols"><div><div class="hd">YOU WILL LEARN</div><ol>${(c.learn || []).map((l) => `<li>${esc(l)}</li>`).join('')}</ol></div>`
       + `<div><div class="hd">IN THIS VIDEO</div><ol class="sm">${agenda.map((a) => `<li>${esc(a)}</li>`).join('')}</ol></div></div>`
@@ -325,7 +333,7 @@ footer { margin-top: 48px; padding-top: 14px; border-top: 1px solid var(--line);
   const outroCard = () => {
     const c = D.outro || {};
     const who = credit(c.builtBy || (D.intro || {}).builtBy);
-    return `<div class="card kt"><div class="eb">WRAP-UP</div><div class="tt">${esc(c.title || 'Three things to remember')}</div>`
+    return `<div class="card kt"${brandStyle}>${brandMark()}<div class="eb">WRAP-UP</div><div class="tt">${esc(c.title || 'Three things to remember')}</div>`
       + `<div class="cols"><div><ol>${(c.remember || []).map((r) => `<li>${esc(r)}</li>`).join('')}</ol></div>`
       + `<div><div class="hd">NEXT STEPS</div><ol class="sm">${(c.next || []).map((n) => `<li>${esc(n.label)}${n.detail ? ` <code>${esc(n.detail)}</code>` : ''}</li>`).join('')}</ol></div></div>`
       + `<div class="ft">${c.ask && c.ask !== 'none' ? `Questions? <b>${esc(c.ask)}</b>` : ''}${who ? ` · Built by <b>${esc(who)}</b>` : ''}</div></div>`;

@@ -34,6 +34,11 @@ voice:
 
 review: artifact                      # artifact (comment on a Claude artifact) or local (open the HTML file, comment in the chat)
 
+# branding:                           # your brand on the videos; /kt-studio:init asks once and writes this, or `branding: none`
+#   logo: docs/brand/logo.svg         # svg, png, jpg or webp in the project, under 1 MB: on the intro and outro cards
+#   accent: "#0e7ad3"                 # one colour, in quotes: the cards, the map, the code highlight
+#   name: Acme                        # optional: shown next to the logo
+
 # defaults:                           # optional: the answer a video recommends when nothing else says (each feature keeps its own answers)
 #   audience: qa                      # developer, qa, product or support
 #   show: screens-and-code            # screens-and-code, screens or code

@@ -43,6 +43,7 @@ bash <skill>/scripts/doctor.sh <root> --data <data>
 
 - **`folder`** (`.kt-studio/config.yml` exists): the project is set up. Show both files in short, ask
   what to change (one question), change only that, then go to step 6. Nothing to change: go to step 6.
+  When config.yml has no `branding` line yet, ask the brand question of step 4 too (it is asked once).
 - **`none`**: a new project, steps 3 to 7.
 
 ## 3. Learn the project (no questions yet)
@@ -98,6 +99,19 @@ guess as the first option:
    command (the CLAUDE.md, a test guide or older instructions often name it), with the command the person
    runs and the session file it writes. KT Studio never logs in for the person and never runs that
    command. Never ask for a password, token or key, and never write one into a file.
+7. **Your brand**, one question, and two more only on a yes: "Add your brand to the videos? Your logo
+   and colour on the intro and outro cards, your colour on the highlights." Answers: **No, keep the
+   KT Studio look** (first) and **Yes, add my brand**.
+   - No: write `branding: none`. It is never asked again.
+   - Yes: run `python3 <skill>/scripts/brand.py <root> --find`, then one AskUserQuestion call with two
+     questions. **Logo**: the files it found (at most 3, the path as the label) and "No logo"; "Other"
+     takes a path in the project (a logo kept elsewhere: copy it into `.kt-studio/brand/` first, with
+     the person's yes). The cards are dark: offer the white or light version of a logo first when
+     there is one (`logo-white.svg`, `logo-dark-bg.png`). **Colour**: the colours it found (the hex code as the label, where it was found
+     as the description) and "Keep the KT Studio yellow"; "Other" takes a hex code like `#0e7ad3`.
+   - Write the `branding` block (`references/config.md`), then `python3 <skill>/scripts/brand.py <root> --check`
+     must print nothing. When `--resolved` prints a `note` (a colour too dark for the dark screens is
+     shown lighter), tell the person in one line.
 
 ## 5. Write the folder
 

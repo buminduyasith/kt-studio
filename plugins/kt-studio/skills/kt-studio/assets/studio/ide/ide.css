@@ -1,7 +1,7 @@
 :root {
   --bg: #1e1e1e; --side: #252526; --act: #333333; --title: #2c2c2c; --line: #3c3c3c;
   --text: #cccccc; --muted: #8b8b8b; --accent: #0e7ad3; --select: #04395e; --status: #007acc;
-  --focus: rgba(255, 196, 0, .10); --focus-bar: #ffc400; --comment: #2a2d2e;
+  --focus: rgba(255, 196, 0, .10); --focus-bar: #ffc400; --accent-soft: #ffe7a0; --comment: #2a2d2e;
   --mono: Menlo, "SF Mono", Consolas, monospace;
 }
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -59,7 +59,7 @@ svg { fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round
 #crumbs .sep { color: #666; }
 #crumbs .last { color: #e0e0e0; }
 #flow { display: flex; align-items: center; gap: 6px; font-size: 13px; }
-#flow .journey { font-weight: 700; letter-spacing: .8px; color: #ffc400; margin-right: 6px; }
+#flow .journey { font-weight: 700; letter-spacing: .8px; color: var(--focus-bar); margin-right: 6px; }
 #flow .pill { padding: 4px 12px; border-radius: 999px; background: #2d2d2d; color: #6f6f6f; border: 1px solid #3a3a3a; transition: all .3s; }
 #flow .pill.done { color: #b5b5b5; }
 #flow .pill.now { background: var(--accent); border-color: var(--accent); color: #fff; }
@@ -83,7 +83,7 @@ svg { fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round
 .note { margin: 6px 0 10px 72px; max-width: 980px; border: 1px solid #454545; border-left: 4px solid var(--focus-bar); background: var(--comment);
   border-radius: 6px; padding: 12px 18px; display: flex; gap: 14px; align-items: flex-start; font-family: -apple-system, "SF Pro Text", Arial, sans-serif;
   box-shadow: 0 8px 28px rgba(0,0,0,.35); animation: noteIn .35s ease-out; }
-.note .avatar { flex: none; width: 34px; height: 34px; border-radius: 50%; background: #ffc400; color: #222; font: 800 13px/34px Arial; text-align: center; }
+.note .avatar { flex: none; width: 34px; height: 34px; border-radius: 50%; background: var(--focus-bar); color: #222; font: 800 13px/34px Arial; text-align: center; }
 .note .who { font-size: 13px; color: #9d9d9d; margin-bottom: 4px; }
 .note .what { font-size: 20px; line-height: 1.4; color: #f0f0f0; white-space: normal; }
 .note code { font-family: var(--mono); font-size: 17px; color: #ffd27a; }
@@ -125,7 +125,7 @@ svg { fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round
 #seq .msg.now .head, #seq .msg.reply.now .head { fill: var(--focus-bar); }
 
 #seq .label { fill: #cfcfcf; font: 19px var(--mono); }
-#seq .msg.now .label { fill: #ffe7a0; }
+#seq .msg.now .label { fill: var(--accent-soft); }
 #seq .badge circle { fill: #3c3c3c; transition: fill .3s; } #seq .msg.now .badge circle { fill: var(--focus-bar); }
 #seq .badge text { fill: #e6e6e6; font: 700 15px Arial; } #seq .msg.now .badge text { fill: #1e1e1e; }
 

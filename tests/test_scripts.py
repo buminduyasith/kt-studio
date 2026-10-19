@@ -478,6 +478,93 @@ console.log(cardHtml('intro', cards));
         self.assertEqual((again["ask"], again["use"]["built_by"]["value"]), ([], ["Orders API team"]))
 
 
+class Branding(Tmp):
+    """The project's brand: asked once, checked, made readable on the dark screens, carried to the cards."""
+
+    LOGO = '<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10"><rect width="10" height="10" fill="#fff"/></svg>'
+
+    def setUp(self):
+        super().setUp()
+        import brand
+        self.brand = brand
+        self.write("web/public/logo.svg", self.LOGO)
+        self.write("web/public/icon.png", "x")
+        self.write("web/src/theme.css", ":root { --brand-primary: #1d3557; --accent: #e63946; }\n.a { color: var(--brand-primary); }\n")
+        self.write("web/public/manifest.json", '{"theme_color": "#1d3557"}')
+
+    def config(self, branding: str) -> project.Project:
+        self.write(".kt-studio/config.yml", "project: Acme Shop\n" + branding + "voice:\n  name: af_heart\n")
+        return project.find(self.dir)
+
+    def test_find_offers_logos_and_colours_from_the_project(self):
+        got = self.brand.find(self.dir)
+        self.assertEqual(got["logos"][0], "web/public/logo.svg")       # "logo" and svg first
+        self.assertEqual(got["colours"][0]["hex"], "#1d3557")          # the most used first
+        self.assertIn("web/public/manifest.json", got["colours"][0]["found_in"])
+
+    def test_no_setting_none_and_a_block(self):
+        self.assertIsNone(self.brand.settings(self.config("")))
+        self.assertEqual(self.brand.settings(self.config("branding: none\n")), {})
+        proj = self.config('branding:\n  logo: web/public/logo.svg\n  accent: "#1d3557"   # navy\n  name: Acme\n')
+        self.assertEqual(self.brand.settings(proj), {"logo": "web/public/logo.svg", "accent": "#1d3557", "name": "Acme"})
+
+    def test_check_names_each_problem(self):
+        proj = self.config('branding:\n  logo: missing.svg\n  accent: navy\n')
+        found = "\n".join(self.brand.check(proj))
+        self.assertIn("missing.svg: file not found", found)
+        self.assertIn("accent navy", found)
+        self.assertEqual(self.brand.resolved(proj), {})                # a broken brand falls back to the default look
+
+    def test_a_dark_colour_is_made_readable_and_keeps_its_hue(self):
+        lighter = self.brand.readable("#1d3557")
+        self.assertGreaterEqual(self.brand.contrast(lighter, self.brand.BACKGROUND), 4.5)
+        r, g, b = self.brand.rgb(lighter)
+        self.assertGreater(b, r)                                       # still blue, not grey
+        self.assertEqual(self.brand.readable("#ffc400"), "#ffc400")    # a readable colour is kept
+
+    def test_resolved_carries_the_logo_and_the_note(self):
+        look = self.brand.resolved(self.config('branding:\n  logo: web/public/logo.svg\n  accent: "#1d3557"\n'))
+        self.assertTrue(look["logo"].startswith("data:image/svg+xml;base64,"))
+        self.assertIn("too dark", look["note"])
+
+    def test_make_scenes_puts_the_brand_on_the_cards_and_the_tour(self):
+        self.config('branding:\n  logo: web/public/logo.svg\n  accent: "#e63946"\n  name: Acme\n')
+        board = Maps.board(self)
+        board["parts"][0]["chapters"][0]["scenes"].insert(0, {"id": "B1-00", "title": "Intro", "voice": "Hello.",
+                                                              "kind": "intro", "status": "ready"})
+        board["intro"] = {"learn": ["One thing"]}
+        sb = self.write(".kt-studio/features/refunds/runs/r1/2-storyboard/storyboard.json", json.dumps(board))
+        run_dir = sb.parent.parent
+        (run_dir / "3-scripts").mkdir()
+        run("python3", SCRIPTS / "make_scenes.py", run_dir)
+        cards = json.loads((run_dir / "3-scripts" / "cards.json").read_text())
+        self.assertEqual((cards["brand"]["name"], cards["brand"]["accent"][:1]), ("Acme", "#"))
+        self.assertIn("accent", json.loads((run_dir / "3-scripts" / "brand.json").read_text()))
+        out = run("python3", SCRIPTS / "build_storyboard.py", sb.parent).stdout
+        self.assertIn('"brand"', (sb.parent / "storyboard.html").read_text())
+        self.assertIn("storyboard.html", out)
+
+
+class BrandOnCards(Tmp):
+    def test_the_card_shows_the_logo_and_refuses_other_sources(self):
+        cards_ts = SKILL / "assets" / "studio" / "lib" / "cards.ts"
+        script = self.write("try.mts", f"""import {{ cardHtml }} from {json.dumps(str(cards_ts))};
+const intro = {{ title: 'Refunds' }};
+console.log(cardHtml('intro', {{ intro, brand: {{ logo: 'data:image/svg+xml;base64,AAAA', name: 'Acme' }} }}));
+console.log('---');
+console.log(cardHtml('intro', {{ intro, brand: {{ logo: 'javascript:alert(1)' }} }}));
+""")
+        res = subprocess.run(["node", "--experimental-strip-types", "--no-warnings", str(script)], capture_output=True, text=True)
+        if res.returncode and ("strip-types" in res.stderr or "Unknown file extension" in res.stderr):
+            self.skipTest("this Node cannot run TypeScript directly")
+        self.assertEqual(res.returncode, 0, res.stderr)
+        good, bad = res.stdout.split("---")
+        self.assertIn('<img src="data:image/svg+xml;base64,AAAA"', good)
+        self.assertIn("Acme", good)
+        self.assertNotIn("javascript:", bad)
+        self.assertNotIn('class="brand"', bad)
+
+
 class LoginSafety(Tmp):
     def test_forget_deletes_only_what_kt_studio_made(self):
         team = self.dir / ".auth-team"

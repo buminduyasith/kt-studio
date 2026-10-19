@@ -20,7 +20,8 @@ export type Intro = {
 export type Outro = {
   title?: string; remember?: string[]; next?: { label: string; detail?: string }[]; ask?: string; builtBy?: string[];
 };
-export type Cards = { intro?: Intro; outro?: Outro };
+export type Brand = { accent?: string; accentSoft?: string; logo?: string; name?: string };
+export type Cards = { intro?: Intro; outro?: Outro; brand?: Brand };
 
 /** The cards staged for this demo: `loadCards(__filename)` in a demo script. */
 export function loadCards(demoFile: string): Cards {
@@ -34,13 +35,15 @@ const names = (list?: string[]) => (list ?? []).filter((n) => n && n !== 'none')
 
 const STYLE = `
 :host { all: initial; }
-.wrap { position: fixed; inset: 0; background: radial-gradient(circle at 18% 12%, #23262d 0%, #17181b 55%, #111214 100%);
+.wrap { --accent: #ffc400; position: fixed; inset: 0; background: radial-gradient(circle at 18% 12%, #23262d 0%, #17181b 55%, #111214 100%);
   font-family: -apple-system, "SF Pro Display", "Segoe UI", Arial, sans-serif; color: #e8e8e8; overflow: hidden; }
 .stage { position: absolute; left: 50%; top: 50%; width: 1920px; height: 1080px; transform-origin: center; }
 [data-b] { opacity: 0; }
-.eyebrow { position: absolute; left: 150px; top: 120px; font: 700 22px/1 inherit; letter-spacing: 4px; color: #ffc400; }
+.eyebrow { position: absolute; left: 150px; top: 120px; font: 700 22px/1 inherit; letter-spacing: 4px; color: var(--accent); }
+.brand { position: absolute; right: 150px; top: 96px; display: flex; align-items: center; gap: 18px; font-size: 26px; font-weight: 600; color: #e8e8e8; }
+.brand img { max-height: 76px; max-width: 320px; object-fit: contain; }
 .title { position: absolute; left: 150px; top: 170px; width: 1620px; font-weight: 750; line-height: 1.04; color: #fff; }
-.title::before { content: ''; position: absolute; left: -40px; top: 12px; bottom: 12px; width: 8px; border-radius: 4px; background: #ffc400; }
+.title::before { content: ''; position: absolute; left: -40px; top: 12px; bottom: 12px; width: 8px; border-radius: 4px; background: var(--accent); }
 .tagline { position: absolute; left: 150px; top: 330px; width: 1250px; font-size: 34px; line-height: 1.35; color: #b8bcc4; }
 .col { position: absolute; top: 500px; }
 .col.left { left: 150px; width: 900px; } .col.right { left: 1150px; width: 620px; }
@@ -48,7 +51,7 @@ const STYLE = `
 ol { list-style: none; margin: 0; padding: 0; counter-reset: n; }
 li { counter-increment: n; position: relative; padding-left: 64px; margin-bottom: 24px; font-size: 32px; line-height: 1.3; }
 li::before { content: counter(n); position: absolute; left: 0; top: -2px; width: 42px; height: 42px; border-radius: 50%;
-  background: #2d3038; color: #ffc400; font: 700 22px/42px inherit; text-align: center; }
+  background: #2d3038; color: var(--accent); font: 700 22px/42px inherit; text-align: center; }
 .agenda li { font-size: 25px; margin-bottom: 14px; padding-left: 50px; color: #cfd2d8; }
 .agenda li::before { width: 32px; height: 32px; font-size: 17px; line-height: 32px; top: 0; }
 .length { margin-top: 18px; font-size: 22px; color: #8a8f99; }
@@ -59,8 +62,15 @@ li::before { content: counter(n); position: absolute; left: 0; top: -2px; width:
 .next li { font-size: 28px; }
 .next .detail { display: block; margin-top: 6px; font-family: Menlo, "SF Mono", Consolas, monospace; font-size: 21px; color: #9fd3c7; }
 .remember li { font-size: 36px; margin-bottom: 30px; }
-.ask { font-size: 30px; color: #e8e8e8; } .ask span { color: #ffc400; font-weight: 700; }
+.ask { font-size: 30px; color: #e8e8e8; } .ask span { color: var(--accent); font-weight: 700; }
 `;
+
+// The project's logo (and name) in the top-right corner, when config.yml has a brand.
+function brandHtml(b?: Brand): string {
+  const logo = b?.logo?.startsWith('data:image/') ? b.logo : '';  // only the data URI brand.py makes
+  if (!logo && !b?.name) return '';
+  return `<div class="brand" data-b>${logo ? `<img src="${logo}" alt="">` : ''}${b?.name ? `<span>${esc(b.name)}</span>` : ''}</div>`;
+}
 
 function introHtml(c: Intro): string {
   const size = c.title.length > 34 ? 72 : 92;
@@ -92,7 +102,7 @@ function outroHtml(c: Outro): string {
 export function cardHtml(kind: 'intro' | 'outro', cards: Cards): string {
   const data = cards[kind];
   if (!data) throw new Error(`No ${kind} in the cards (the storyboard's "${kind}", written by make_scenes.py)`);
-  return kind === 'intro' ? introHtml(data as Intro) : outroHtml(data as Outro);
+  return brandHtml(cards.brand) + (kind === 'intro' ? introHtml(data as Intro) : outroHtml(data as Outro));
 }
 
 /**
@@ -103,19 +113,20 @@ export function cardHtml(kind: 'intro' | 'outro', cards: Cards): string {
  */
 export async function cardOn(cue: SceneCue, page: Page, kind: 'intro' | 'outro', cards: Cards, words: (Cue | null)[] = []) {
   const html = cardHtml(kind, cards);
-  const count = await page.evaluate(({ html, style }) => {
+  const { count, first } = await page.evaluate(({ html, style, accent }) => {
     document.getElementById('kt-card')?.remove();
     const host = document.createElement('div');
     host.id = 'kt-card';
     host.style.cssText = 'position:fixed;inset:0;z-index:2147483646;';
     const root = host.attachShadow({ mode: 'open' });
-    root.innerHTML = `<style>${style}</style><div class="wrap"><div class="stage">${html}</div></div>`;
+    root.innerHTML = `<style>${style}</style><div class="wrap"${accent ? ` style="--accent:${accent}"` : ''}><div class="stage">${html}</div></div>`;
     const stage = root.querySelector('.stage') as HTMLElement;
     const fit = () => { stage.style.transform = `translate(-50%, -50%) scale(${Math.min(innerWidth / 1920, innerHeight / 1080)})`; };
     fit();
     document.documentElement.appendChild(host);
-    return root.querySelectorAll('[data-b]').length;
-  }, { html, style: STYLE });
+    // The logo, the eyebrow and the title come in together; the rest one by one.
+    return { count: root.querySelectorAll('[data-b]').length, first: root.querySelector('.brand') ? 3 : 2 };
+  }, { html, style: STYLE, accent: cards.brand?.accent ?? '' });
 
   const reveal = (i: number) => page.evaluate(async (n) => {
     const el = document.getElementById('kt-card')?.shadowRoot?.querySelectorAll('[data-b]')[n] as HTMLElement | undefined;
@@ -124,14 +135,14 @@ export async function cardOn(cue: SceneCue, page: Page, kind: 'intro' | 'outro',
       { duration: 480, easing: 'cubic-bezier(0, 0, .2, 1)', fill: 'forwards' }).finished;
   }, i);
 
-  await Promise.all([reveal(0), reveal(1)]);  // the eyebrow and the title together
-  const rest = count - 2;
+  await Promise.all(Array.from({ length: first }, (_, i) => reveal(i)));
+  const rest = count - first;
   const gap = Math.max(500, Math.min(1400, (cue.left() * 0.55) / Math.max(1, rest)));
   for (let i = 0; i < rest; i++) {
     const word = words[i];
     if (word) await cue.at(word);
     else await page.waitForTimeout(gap);
-    await reveal(i + 2);
+    await reveal(i + first);
   }
   await cue.end();
   if (kind === 'intro') {

@@ -25,7 +25,9 @@ Each video has two parts:
 
 Every video opens with an intro card (what the feature is, what you will learn, the chapters, who
 built it) and closes with an outro card (three things to remember, next steps, who to ask). You pick
-which names are shown, or none. You also get subtitles and chapters. The voice is made **on your computer**, so your code and
+which names are shown, or none. Want your own look? `/kt-studio:init` asks once whether to add your
+brand: your logo on the intro and outro, and your colour on the highlights. Say no and it never asks
+again. You also get subtitles and chapters. The voice is made **on your computer**, so your code and
 narration are never sent to a voice service.
 
 ![How KT Studio fits together: you, Claude Code with the plugin, your project, the storyboard, the recorder, your app and the run folder](docs/images/architecture.svg)

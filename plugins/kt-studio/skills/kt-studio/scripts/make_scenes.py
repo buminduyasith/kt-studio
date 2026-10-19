@@ -2,7 +2,8 @@
 the storyboard's words: 3-scripts/ui.scenes.json (part A) and 3-scripts/code.scenes.json (part B),
 3-scripts/diagrams.json when the storyboard has sequence diagrams, 3-scripts/maps.json when it has
 system maps, and 3-scripts/cards.json for the intro and outro cards (lib/cards.ts), with what the
-storyboard leaves out filled in: the title, the chapter list, the length and the code version.
+storyboard leaves out filled in: the title, the chapter list, the length and the code version, and
+3-scripts/brand.json when config.yml has a brand (scripts/brand.py).
 
 Each entry: { "scene", "text" (spoken: the pronounce map applied), "caption" (on-screen spelling, only
 when it differs) }. An "overlay" already in the file is kept, so it can be added by hand once.
@@ -17,7 +18,9 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
+import brand  # noqa: E402
 import build_storyboard  # noqa: E402
+import project  # noqa: E402
 
 
 def main() -> None:
@@ -79,12 +82,24 @@ def main() -> None:
         out.write_text(json.dumps(board["maps"], indent=2, ensure_ascii=False) + "\n")
         print(f"{out}: {len(board['maps'])} maps")
 
+    # The project's brand (config.yml `branding`): the cards and the code tour use its logo and colour.
+    look = brand.resolved(project.find(run))
+    if look.get("note"):
+        print(f"brand: {look['note']}")
+    brand_file = run / "3-scripts" / "brand.json"
+    if look:
+        brand_file.write_text(json.dumps({k: v for k, v in look.items() if k != "note"}, ensure_ascii=False) + "\n")
+    elif brand_file.exists():
+        brand_file.unlink()
+
     # The intro and outro cards (lib/cards.ts reads cards.json, staged next to the demo).
     cards = cards_for(board)
+    if cards and look:
+        cards["brand"] = {k: v for k, v in look.items() if k != "note"}
     if cards:
         out = run / "3-scripts" / "cards.json"
         out.write_text(json.dumps(cards, indent=2, ensure_ascii=False) + "\n")
-        print(f"{out}: {', '.join(cards)}")
+        print(f"{out}: {', '.join(k for k in cards if k != 'brand')}{' (with the brand)' if 'brand' in cards else ''}")
 
 
 def cards_for(board: dict) -> dict:

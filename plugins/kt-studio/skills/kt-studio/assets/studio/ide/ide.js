@@ -461,6 +461,13 @@
     if (first) open(...first.split(/:(.*)/s).slice(0, 2));
   });
 
+  // The project's brand colour, when it has one: the highlight bar, the notes, the map's active path.
+  if (TOUR.brand?.accent) {
+    const root = document.documentElement.style;
+    root.setProperty('--focus-bar', TOUR.brand.accent);
+    root.setProperty('--focus', `color-mix(in srgb, ${TOUR.brand.accent} 12%, transparent)`);
+    if (TOUR.brand.accentSoft) root.setProperty('--accent-soft', TOUR.brand.accentSoft);
+  }
   $('#ws-name').textContent = `${TOUR.workspace} (WORKSPACE)`;
   renderTree();
   flow('', null);

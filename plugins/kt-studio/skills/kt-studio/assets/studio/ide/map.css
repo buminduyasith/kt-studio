@@ -41,10 +41,10 @@
 #map .link.s-event.now .wire, #map .link.s-event.done .wire { stroke-dasharray: 10 8; }
 #map .s-write .wire, #map .s-read .wire { stroke: #4ec9b0; } #map .s-write .head, #map .s-read .head { fill: #4ec9b0; }
 #map .s-fail .wire { stroke: #f14c4c; } #map .s-fail .head { fill: #f14c4c; }
-#map .link.now .label { fill: #ffe7a0; }
+#map .link.now .label { fill: var(--accent-soft); }
 
-#map .packet rect { fill: #3a3000; stroke: var(--focus-bar); stroke-width: 2; }
-#map .packet text { fill: #ffe7a0; font: 600 16px var(--mono); }
+#map .packet rect { fill: color-mix(in srgb, var(--focus-bar) 20%, #1e1e1e); stroke: var(--focus-bar); stroke-width: 2; }
+#map .packet text { fill: var(--accent-soft); font: 600 16px var(--mono); }
 #map .packet.s-reply rect { fill: #10293a; stroke: #6fb3d2; } #map .packet.s-reply text { fill: #cfe9f7; }
 #map .packet.s-event rect { fill: #2e1f30; stroke: #c586c0; } #map .packet.s-event text { fill: #f0d7ee; }
 #map .packet.s-write rect, #map .packet.s-read rect { fill: #133229; stroke: #4ec9b0; } #map .packet.s-write text, #map .packet.s-read text { fill: #bff0e2; }
@@ -56,18 +56,18 @@
 #map .strip .chip.now { opacity: 1; }
 #map .strip circle { fill: #3c3c3c; } #map .strip .chip.now circle { fill: var(--focus-bar); }
 #map .strip .num { fill: #e6e6e6; font: 700 14px Arial; } #map .strip .chip.now .num { fill: #1e1e1e; }
-#map .strip .what { fill: #bdbdbd; font: 15px var(--mono); } #map .strip .chip.now .what { fill: #ffe7a0; }
+#map .strip .what { fill: #bdbdbd; font: 15px var(--mono); } #map .strip .chip.now .what { fill: var(--accent-soft); }
 
 /* "You are here": the map, small, in the corner while the code is on screen. */
 #locator { position: absolute; right: 18px; bottom: 16px; z-index: 4; width: 400px; padding: 6px; border-radius: 10px;
   background: rgba(37, 37, 38, .94); border: 1px solid #3c3c3c; opacity: 0; transition: opacity .4s; pointer-events: none; }
 #locator.on { opacity: 1; }
-#locator .here { padding: 2px 6px 4px; color: #ffe7a0; font: 600 14px -apple-system, Arial, sans-serif; }
+#locator .here { padding: 2px 6px 4px; color: var(--accent-soft); font: 600 14px -apple-system, Arial, sans-serif; }
 #locator .here::before { content: 'YOU ARE HERE  '; color: #8b8b8b; font-size: 11px; letter-spacing: 1.2px; }
 #locator svg { width: 100%; height: auto; display: block; stroke: none; }
 #locator .wire { stroke: #4a4a4a; stroke-width: 1.5; }
 #locator .node .shape, #locator .node .rim { fill: #2d2d2d; stroke: #555; stroke-width: 1.2; }
 #locator .node .name { fill: #9a9a9a; font: 600 10.5px -apple-system, Arial, sans-serif; }
-#locator .node.here .shape, #locator .node.here .rim { fill: #3a3000; stroke: var(--focus-bar); stroke-width: 2; }
-#locator .node.here .name { fill: #ffe7a0; }
+#locator .node.here .shape, #locator .node.here .rim { fill: color-mix(in srgb, var(--focus-bar) 20%, #1e1e1e); stroke: var(--focus-bar); stroke-width: 2; }
+#locator .node.here .name { fill: var(--accent-soft); }
 #locator .state { display: none; }

@@ -69,7 +69,11 @@ const terminals = tour.terminals ?? (existsSync(terminalsFile) ? JSON.parse(read
 // System maps (services, how they talk, a request travelling between them), also written by make_scenes.py.
 const mapsFile = path.join(path.dirname(path.resolve(tourPath)), 'maps.json');
 const maps = tour.maps ?? (existsSync(mapsFile) ? JSON.parse(readFileSync(mapsFile, 'utf8')) : {});
-const data = { title: tour.title ?? 'Code tour', workspace: tour.workspace ?? 'WORKSPACE', repos: {}, files: {}, diagrams, terminals, maps };
+// The project's brand colour (scripts/brand.py, through make_scenes.py): the highlight, the map, the notes.
+const brandFile = path.join(path.dirname(path.resolve(tourPath)), 'brand.json');
+const brand = tour.brand ?? (existsSync(brandFile) ? JSON.parse(readFileSync(brandFile, 'utf8')) : {});
+delete brand.logo;  // the tour shows no logo; the intro and outro cards do
+const data = { title: tour.title ?? 'Code tour', workspace: tour.workspace ?? 'WORKSPACE', repos: {}, files: {}, diagrams, terminals, maps, brand };
 for (const [key, entry] of Object.entries(tour.repos)) {
   // Repo paths may be relative to tour.json.
   const repo = { ...entry, path: path.resolve(path.dirname(path.resolve(tourPath)), entry.path) };

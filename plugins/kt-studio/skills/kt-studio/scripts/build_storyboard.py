@@ -297,6 +297,14 @@ def build(folder: Path) -> Path:
             if len(step.get("label", "")) > 32:
                 print(f"note: diagram {name} step {i}: label is {len(step['label'])} characters; keep it to about 32 so it does not run over the lifelines")
     data["production"]["pronounce"] = pronounce_pairs(data["production"]["pronounce"])
+    # The project's brand (config.yml `branding`), so the intro and outro previews look like the video.
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
+    import brand
+    import project
+    look = brand.resolved(project.find(folder))
+    if look.get("note"):
+        print(f"note: brand: {look['note']}")
+    data["brand"] = {k: v for k, v in look.items() if k != "note"}
     payload = json.dumps(data, ensure_ascii=False).replace("</", "<\\/")
     title = f"{data['meta'].get('short') or data['meta']['feature']} Storyboard"
     out = folder / "storyboard.html"

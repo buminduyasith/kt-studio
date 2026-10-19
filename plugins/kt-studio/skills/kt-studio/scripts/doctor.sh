@@ -103,6 +103,11 @@ if [ "$KT_LAYOUT" != none ]; then
     && ! sed -n '/^##[[:space:]]*Logging in/,/^##[[:space:]]/p' "$KT_INSTRUCTIONS" | grep -qiE '^\|.*How'; then
     tip "## Logging in in $instructions is written as sentences: make it a table (Service | Environment | How | The person runs | Session file) so every run follows it exactly. /kt-studio:init can draft it"
   fi
+  # The brand: a broken setting falls back to KT Studio's look, so say why; none set: only a note.
+  while IFS= read -r problem; do
+    [ -n "$problem" ] && tip "$problem: the videos use KT Studio's own look until it is fixed in $(rel "$YML")"
+  done < <(python3 "$SKILL_DIR/scripts/brand.py" "$ROOT" --check 2>/dev/null)
+  grep -qE '^branding:' "$YML" || note "no brand set: /kt-studio:init can add your logo and colour to the videos (it asks once)"
   # A knowledge source that is not on this computer: research skips it.
   while IFS= read -r missing; do
     [ -n "$missing" ] && tip "$missing: research skips it. Fix the path under knowledge: in $(rel "$YML"), or delete the line"
